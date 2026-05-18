@@ -88,7 +88,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 suffixIcon: IconButton(
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                   icon: Icon(
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
                     color: AppColors.textSecondary,

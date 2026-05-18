@@ -25,6 +25,7 @@ class MenuItemCard extends StatefulWidget {
   final String name;
   final String description;
   final String price;
+  final String? imageUrl; // Parameter untuk image content (Asset / Network)
   final VoidCallback? onTap;
   final VoidCallback? onAddToCart;
 
@@ -33,6 +34,7 @@ class MenuItemCard extends StatefulWidget {
     required this.name,
     required this.description,
     required this.price,
+    this.imageUrl,
     this.onTap,
     this.onAddToCart,
   });
@@ -78,23 +80,18 @@ class _MenuItemCardState extends State<MenuItemCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ─── GAMBAR PRODUK (PLACEHOLDER) ─────────────────
-              // TODO: Ganti dengan Image.asset(...)
-              AspectRatio(
-                aspectRatio: 1.2,
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(12),
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.local_cafe,
-                    color: Colors.grey[400],
-                    size: 36,
-                  ),
+              // ─── GAMBAR PRODUK ─────────────────
+              // Mendukung 3 mode:
+              //   1. Network  → imageUrl dimulai dengan 'http'
+              //   2. Asset    → imageUrl = path asset, misal 'assets/images/menu/kopi.png'
+              //   3. Kosong   → placeholder icon
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
+                child: AspectRatio(
+                  aspectRatio: 1.2,
+                  child: _buildProductImage(),
                 ),
               ),
 
@@ -166,6 +163,85 @@ class _MenuItemCardState extends State<MenuItemCard> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // IMAGE BUILDER — otomatis pilih Network / Asset / Placeholder
+  // ══════════════════════════════════════════════════════════════
+
+  Widget _buildProductImage() {
+    final url = widget.imageUrl;
+
+    // Jika kosong → placeholder
+    if (url == null || url.isEmpty) {
+      return _buildPlaceholder();
+    }
+
+    // Jika dimulai dengan http → Network image
+    if (url.startsWith('http')) {
+      return Image.network(
+        url,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        // Loading indicator saat gambar sedang di-download
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            color: Colors.grey[200],
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+                color: AppColors.primary,
+              ),
+            ),
+          );
+        },
+        // Jika gagal load (URL diblokir/broken) → tampilkan placeholder
+        errorBuilder: (context, error, stackTrace) {
+          return _buildPlaceholder(showError: true);
+        },
+      );
+    }
+
+    // Selain http → Asset image (file lokal dari assets/)
+    return Image.asset(
+      url,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      errorBuilder: (context, error, stackTrace) {
+        return _buildPlaceholder(showError: true);
+      },
+    );
+  }
+
+  /// Placeholder ketika gambar belum ada atau gagal load.
+  Widget _buildPlaceholder({bool showError = false}) {
+    return Container(
+      color: Colors.grey[200],
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              showError ? Icons.broken_image_outlined : Icons.image_outlined,
+              color: Colors.grey[400],
+              size: 36,
+            ),
+            if (showError) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Gambar error',
+                style: TextStyle(fontSize: 10, color: Colors.grey[400]),
+              ),
+            ],
+          ],
         ),
       ),
     );

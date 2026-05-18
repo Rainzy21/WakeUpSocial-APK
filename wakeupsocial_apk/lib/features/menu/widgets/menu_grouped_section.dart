@@ -104,6 +104,7 @@ class MenuGroupedSection extends StatelessWidget {
                   name: item['name']!,
                   description: item['desc']!,
                   price: item['price']!,
+                  imageUrl: item['imageUrl'],
                   onTap: () => onItemTap?.call(item),
                   onAddToCart: () => onAddToCart?.call(item),
                 );

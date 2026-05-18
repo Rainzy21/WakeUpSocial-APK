@@ -37,13 +37,21 @@ class _MenuScreenState extends State<MenuScreen> {
   double _scrollOffset = 0;
 
   final List<String> _mainCategories = [
-    'All Menu', 'Makanan', 'Minuman', 'Snack', 'Pastry',
+    'All Menu',
+    'Makanan',
+    'Minuman',
+    'Snack',
+    'Pastry',
   ];
 
   /// Urutan sub-kategori minuman (untuk grouped sections).
   final List<String> _drinkGroups = [
-    'Espresso Based', 'Milk Coffee', 'Signature',
-    'Mocktail', 'Non Coffee', 'Tea',
+    'Espresso Based',
+    'Milk Coffee',
+    'Signature',
+    'Mocktail',
+    'Non Coffee',
+    'Tea',
   ];
 
   @override
@@ -145,7 +153,10 @@ class _MenuScreenState extends State<MenuScreen> {
       actions: [
         IconButton(
           onPressed: () => NavigationHelper.toCart(context),
-          icon: const Icon(Icons.shopping_cart_outlined, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.shopping_cart_outlined,
+            color: AppColors.textPrimary,
+          ),
           tooltip: 'Keranjang',
         ),
       ],
@@ -189,7 +200,11 @@ class _MenuScreenState extends State<MenuScreen> {
                   _searchController.clear();
                   setState(() => _searchQuery = '');
                 },
-                icon: Icon(Icons.close, color: AppColors.textSecondary, size: 18),
+                icon: Icon(
+                  Icons.close,
+                  color: AppColors.textSecondary,
+                  size: 18,
+                ),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 32),
               ),
@@ -278,6 +293,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 name: item['name']!,
                 description: item['desc']!,
                 price: item['price']!,
+                imageUrl: item['imageUrl'],
                 onTap: () {},
                 onAddToCart: () => NavigationHelper.toCart(context),
               );
@@ -354,50 +370,287 @@ class _ParallaxPromoCarousel extends StatelessWidget {
 }
 
 // ══════════════════════════════════════════════════════════════
-// MOCK DATA
+// DATA MENU — GANTI imageUrl DENGAN URL GAMBAR MENU ANDA
+// ══════════════════════════════════════════════════════════════
+//
+// Cara menambahkan / mengedit menu:
+//   1. Copy template di bawah ini:
+//
+//   {'name': 'Nama Menu', 'desc': 'Deskripsi singkat', 'price': 'Rp XX.000', 'imageUrl': 'https://url-gambar-anda.com/gambar.png', 'category': 'Minuman', 'subCategory': 'Espresso Based'},
+//
+//   2. Ganti masing-masing value:
+//      - name       → Nama produk
+//      - desc       → Deskripsi singkat
+//      - price      → Harga (format: "Rp XX.000")
+//      - imageUrl   → URL gambar menu (kosongkan '' jika belum ada)
+//      - category   → Kategori utama: 'Minuman', 'Makanan', 'Snack', 'Pastry'
+//      - subCategory→ Sub-kategori (khusus Minuman): 'Espresso Based', 'Milk Coffee', 'Signature', 'Mocktail', 'Non Coffee', 'Tea'
+//                     Untuk kategori lain, isi '' (kosong)
+//
+//   3. Tempel di bawah kategori yang sesuai.
+//
 // ══════════════════════════════════════════════════════════════
 final List<Map<String, String>> _allMenuItems = [
-  // ─── MINUMAN: Espresso Based
-  {'name': 'Espresso', 'desc': 'Pure double shot espresso', 'price': 'Rp 18.000', 'category': 'Minuman', 'subCategory': 'Espresso Based'},
-  {'name': 'Americano', 'desc': 'Espresso with hot water', 'price': 'Rp 22.000', 'category': 'Minuman', 'subCategory': 'Espresso Based'},
-  {'name': 'Long Black', 'desc': 'Double espresso poured over hot water', 'price': 'Rp 23.000', 'category': 'Minuman', 'subCategory': 'Espresso Based'},
+  // ┌──────────────────────────────────────────────────────────┐
+  // │  MINUMAN: Espresso Based                                 │
+  // │  Ganti imageUrl dengan URL gambar menu Anda              │
+  // └──────────────────────────────────────────────────────────┘
+  {
+    'name': 'Espresso',
+    'desc': 'Pure double shot espresso',
+    'price': 'Rp 18.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Espresso Based',
+  },
+  {
+    'name': 'Americano',
+    'desc': 'Espresso with hot water',
+    'price': 'Rp 22.000',
+    'imageUrl': 'assets/images/menu/Americano.jpg',
+    'category': 'Minuman',
+    'subCategory': 'Espresso Based',
+  },
+  {
+    'name': 'Long Black',
+    'desc': 'Double espresso poured over hot water',
+    'price': 'Rp 23.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Espresso Based',
+  },
 
-  // ─── MINUMAN: Milk Coffee
-  {'name': 'Flat White', 'desc': 'Ristretto shots with silky steamed milk', 'price': 'Rp 25.000', 'category': 'Minuman', 'subCategory': 'Milk Coffee'},
-  {'name': 'Cappuccino', 'desc': 'Espresso, steamed milk, thick foam', 'price': 'Rp 24.000', 'category': 'Minuman', 'subCategory': 'Milk Coffee'},
-  {'name': 'Cafe Latte', 'desc': 'Smooth espresso with steamed milk', 'price': 'Rp 25.000', 'category': 'Minuman', 'subCategory': 'Milk Coffee'},
+  // ┌──────────────────────────────────────────────────────────┐
+  // │  MINUMAN: Milk Coffee                                    │
+  // └──────────────────────────────────────────────────────────┘
+  {
+    'name': 'Flat White',
+    'desc': 'Ristretto shots with silky steamed milk',
+    'price': 'Rp 25.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Milk Coffee',
+  },
+  {
+    'name': 'Cappuccino',
+    'desc': 'Espresso, steamed milk, thick foam',
+    'price': 'Rp 24.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Milk Coffee',
+  },
+  {
+    'name': 'Cafe Latte',
+    'desc': 'Smooth espresso with steamed milk',
+    'price': 'Rp 25.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Milk Coffee',
+  },
+  {
+    'name': 'Kopi Susu',
+    'desc': 'Kopi susu segar khas WakeUp',
+    'price': 'Rp 25.000',
+    'imageUrl': 'assets/images/menu/Americano.jpg',
+    'category': 'Minuman',
+    'subCategory': 'Milk Coffee',
+  },
+  // ┌──────────────────────────────────────────────────────────┐
+  // │  MINUMAN: Signature                                      │
+  // └──────────────────────────────────────────────────────────┘
+  {
+    'name': 'Wake Up Special',
+    'desc': 'Our signature house blend',
+    'price': 'Rp 32.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Signature',
+  },
+  {
+    'name': 'Social Fusion',
+    'desc': 'Espresso, caramel, vanilla cream',
+    'price': 'Rp 35.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Signature',
+  },
 
-  // ─── MINUMAN: Signature
-  {'name': 'Wake Up Special', 'desc': 'Our signature house blend', 'price': 'Rp 32.000', 'category': 'Minuman', 'subCategory': 'Signature'},
-  {'name': 'Social Fusion', 'desc': 'Espresso, caramel, vanilla cream', 'price': 'Rp 35.000', 'category': 'Minuman', 'subCategory': 'Signature'},
+  // ┌──────────────────────────────────────────────────────────┐
+  // │  MINUMAN: Mocktail                                       │
+  // └──────────────────────────────────────────────────────────┘
+  {
+    'name': 'Berry Fizz',
+    'desc': 'Mixed berry with sparkling soda',
+    'price': 'Rp 28.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Mocktail',
+  },
+  {
+    'name': 'Tropical Sunset',
+    'desc': 'Mango, passion fruit, lychee',
+    'price': 'Rp 30.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Mocktail',
+  },
 
-  // ─── MINUMAN: Mocktail
-  {'name': 'Berry Fizz', 'desc': 'Mixed berry with sparkling soda', 'price': 'Rp 28.000', 'category': 'Minuman', 'subCategory': 'Mocktail'},
-  {'name': 'Tropical Sunset', 'desc': 'Mango, passion fruit, lychee', 'price': 'Rp 30.000', 'category': 'Minuman', 'subCategory': 'Mocktail'},
+  // ┌──────────────────────────────────────────────────────────┐
+  // │  MINUMAN: Non Coffee                                     │
+  // └──────────────────────────────────────────────────────────┘
+  {
+    'name': 'Matcha Latte',
+    'desc': 'Japanese green tea latte',
+    'price': 'Rp 26.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Non Coffee',
+  },
+  {
+    'name': 'Chocolate',
+    'desc': 'Rich Belgian chocolate',
+    'price': 'Rp 25.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Non Coffee',
+  },
+  {
+    'name': 'Vanilla Milkshake',
+    'desc': 'Creamy vanilla ice blend',
+    'price': 'Rp 27.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Non Coffee',
+  },
 
-  // ─── MINUMAN: Non Coffee
-  {'name': 'Matcha Latte', 'desc': 'Japanese green tea latte', 'price': 'Rp 26.000', 'category': 'Minuman', 'subCategory': 'Non Coffee'},
-  {'name': 'Chocolate', 'desc': 'Rich Belgian chocolate', 'price': 'Rp 25.000', 'category': 'Minuman', 'subCategory': 'Non Coffee'},
-  {'name': 'Vanilla Milkshake', 'desc': 'Creamy vanilla ice blend', 'price': 'Rp 27.000', 'category': 'Minuman', 'subCategory': 'Non Coffee'},
+  // ┌──────────────────────────────────────────────────────────┐
+  // │  MINUMAN: Tea                                            │
+  // └──────────────────────────────────────────────────────────┘
+  {
+    'name': 'Earl Grey',
+    'desc': 'Classic bergamot black tea',
+    'price': 'Rp 20.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Tea',
+  },
+  {
+    'name': 'Chamomile',
+    'desc': 'Calming floral herbal tea',
+    'price': 'Rp 22.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Tea',
+  },
+  {
+    'name': 'Lemon Ginger Tea',
+    'desc': 'Fresh lemon with warm ginger',
+    'price': 'Rp 22.000',
+    'imageUrl': '',
+    'category': 'Minuman',
+    'subCategory': 'Tea',
+  },
 
-  // ─── MINUMAN: Tea
-  {'name': 'Earl Grey', 'desc': 'Classic bergamot black tea', 'price': 'Rp 20.000', 'category': 'Minuman', 'subCategory': 'Tea'},
-  {'name': 'Chamomile', 'desc': 'Calming floral herbal tea', 'price': 'Rp 22.000', 'category': 'Minuman', 'subCategory': 'Tea'},
-  {'name': 'Lemon Ginger Tea', 'desc': 'Fresh lemon with warm ginger', 'price': 'Rp 22.000', 'category': 'Minuman', 'subCategory': 'Tea'},
+  // ┌──────────────────────────────────────────────────────────┐
+  // │  MAKANAN (Main Course)                                   │
+  // └──────────────────────────────────────────────────────────┘
+  {
+    'name': 'Nasi Goreng',
+    'desc': 'Indonesian fried rice special',
+    'price': 'Rp 35.000',
+    'imageUrl': '',
+    'category': 'Makanan',
+    'subCategory': '',
+  },
+  {
+    'name': 'Chicken Steak',
+    'desc': 'Grilled chicken with mushroom sauce',
+    'price': 'Rp 45.000',
+    'imageUrl': '',
+    'category': 'Makanan',
+    'subCategory': '',
+  },
+  {
+    'name': 'Aglio Olio',
+    'desc': 'Spaghetti garlic, chili, olive oil',
+    'price': 'Rp 38.000',
+    'imageUrl': '',
+    'category': 'Makanan',
+    'subCategory': '',
+  },
+  {
+    'name': 'Club Sandwich',
+    'desc': 'Triple decker with fries',
+    'price': 'Rp 40.000',
+    'imageUrl': '',
+    'category': 'Makanan',
+    'subCategory': '',
+  },
 
-  // ─── MAKANAN (Main Course)
-  {'name': 'Nasi Goreng', 'desc': 'Indonesian fried rice special', 'price': 'Rp 35.000', 'category': 'Makanan', 'subCategory': ''},
-  {'name': 'Chicken Steak', 'desc': 'Grilled chicken with mushroom sauce', 'price': 'Rp 45.000', 'category': 'Makanan', 'subCategory': ''},
-  {'name': 'Aglio Olio', 'desc': 'Spaghetti garlic, chili, olive oil', 'price': 'Rp 38.000', 'category': 'Makanan', 'subCategory': ''},
-  {'name': 'Club Sandwich', 'desc': 'Triple decker with fries', 'price': 'Rp 40.000', 'category': 'Makanan', 'subCategory': ''},
+  // ┌──────────────────────────────────────────────────────────┐
+  // │  SNACK                                                   │
+  // └──────────────────────────────────────────────────────────┘
+  {
+    'name': 'French Fries',
+    'desc': 'Crispy golden fries',
+    'price': 'Rp 20.000',
+    'imageUrl': '',
+    'category': 'Snack',
+    'subCategory': '',
+  },
+  {
+    'name': 'Chicken Wings',
+    'desc': 'Spicy buffalo wings (6 pcs)',
+    'price': 'Rp 30.000',
+    'imageUrl': '',
+    'category': 'Snack',
+    'subCategory': '',
+  },
+  {
+    'name': 'Nachos',
+    'desc': 'Tortilla chips with cheese dip',
+    'price': 'Rp 28.000',
+    'imageUrl': '',
+    'category': 'Snack',
+    'subCategory': '',
+  },
 
-  // ─── SNACK
-  {'name': 'French Fries', 'desc': 'Crispy golden fries', 'price': 'Rp 20.000', 'category': 'Snack', 'subCategory': ''},
-  {'name': 'Chicken Wings', 'desc': 'Spicy buffalo wings (6 pcs)', 'price': 'Rp 30.000', 'category': 'Snack', 'subCategory': ''},
-  {'name': 'Nachos', 'desc': 'Tortilla chips with cheese dip', 'price': 'Rp 28.000', 'category': 'Snack', 'subCategory': ''},
+  // ┌──────────────────────────────────────────────────────────┐
+  // │  PASTRY                                                  │
+  // └──────────────────────────────────────────────────────────┘
+  {
+    'name': 'Croissant',
+    'desc': 'Buttery French pastry',
+    'price': 'Rp 22.000',
+    'imageUrl': '',
+    'category': 'Pastry',
+    'subCategory': '',
+  },
+  {
+    'name': 'Cinnamon Roll',
+    'desc': 'Warm cinnamon with cream cheese',
+    'price': 'Rp 25.000',
+    'imageUrl': '',
+    'category': 'Pastry',
+    'subCategory': '',
+  },
+  {
+    'name': 'Banana Bread',
+    'desc': 'Moist banana cake slice',
+    'price': 'Rp 20.000',
+    'imageUrl': '',
+    'category': 'Pastry',
+    'subCategory': '',
+  },
 
-  // ─── PASTRY
-  {'name': 'Croissant', 'desc': 'Buttery French pastry', 'price': 'Rp 22.000', 'category': 'Pastry', 'subCategory': ''},
-  {'name': 'Cinnamon Roll', 'desc': 'Warm cinnamon with cream cheese', 'price': 'Rp 25.000', 'category': 'Pastry', 'subCategory': ''},
-  {'name': 'Banana Bread', 'desc': 'Moist banana cake slice', 'price': 'Rp 20.000', 'category': 'Pastry', 'subCategory': ''},
+  // ┌──────────────────────────────────────────────────────────┐
+  // │  TAMBAH MENU BARU DI SINI — Copy template berikut:      │
+  // │                                                          │
+  // │  {'name': 'Nama Menu',                                   │
+  // │   'desc': 'Deskripsi singkat',                           │
+  // │   'price': 'Rp XX.000',                                  │
+  // │   'imageUrl': 'https://url-gambar.com/gambar.png',       │
+  // │   'category': 'Minuman',                                 │
+  // │   'subCategory': 'Espresso Based'},                      │
+  // └──────────────────────────────────────────────────────────┘
 ];
