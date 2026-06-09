@@ -30,19 +30,11 @@ class FeatureCardsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ─── KARTU KIRI: Morning Curator ─────────────────────
-        Expanded(
-          child: _HoverCard(
-            child: _buildMorningCuratorContent(),
-          ),
-        ),
+        Expanded(child: _HoverCard(child: _buildMorningCuratorContent())),
         const SizedBox(width: 12),
 
         // ─── KARTU KANAN: Brewing Today ──────────────────────
-        Expanded(
-          child: _HoverCard(
-            child: _buildBrewingTodayContent(),
-          ),
-        ),
+        Expanded(child: _HoverCard(child: _buildBrewingTodayContent())),
       ],
     );
   }
@@ -173,6 +165,8 @@ class FeatureCardsSection extends StatelessWidget {
 class _HoverCard extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
+
+  // DI SINI PERUBAHANNYA: Inisialisasi parameter 'this.onTap' ke dalam constructor
   const _HoverCard({required this.child, this.onTap});
 
   @override
@@ -204,12 +198,31 @@ class _HoverCardState extends State<_HoverCard> {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(
-                  alpha: _isPressed ? 0.10 : _isHovered ? 0.08 : 0.05,
+                color: Colors.black.withAlpha(
+                  _isPressed
+                      ? 25
+                      : _isHovered
+                      ? 20
+                      : 13, // Menggunakan integer untuk alpha di Flutter terbaru
                 ),
-                blurRadius: _isPressed ? 6 : _isHovered ? 16 : 8,
-                offset: Offset(0, _isPressed ? 1 : _isHovered ? 6 : 3),
-                spreadRadius: _isPressed ? 0 : _isHovered ? 1 : 0,
+                blurRadius: _isPressed
+                    ? 6
+                    : _isHovered
+                    ? 16
+                    : 8,
+                offset: Offset(
+                  0,
+                  _isPressed
+                      ? 1
+                      : _isHovered
+                      ? 6
+                      : 3,
+                ),
+                spreadRadius: _isPressed
+                    ? 0
+                    : _isHovered
+                    ? 1
+                    : 0,
               ),
             ],
           ),

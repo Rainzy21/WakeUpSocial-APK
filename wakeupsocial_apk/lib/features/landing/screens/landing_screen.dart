@@ -54,10 +54,10 @@ class LandingScreen extends StatelessWidget {
         ParallaxSection(
           imageHeight: 320,
           parallaxFactor: 0.5,
-          child: HeroSection.backgroundOnly(),
           overlay: HeroSection.overlayOnly(
             onExploreMenu: () => NavigationHelper.toMenu(context),
           ),
+          child: HeroSection.backgroundOnly(),
         ),
 
         const SizedBox(height: 20),

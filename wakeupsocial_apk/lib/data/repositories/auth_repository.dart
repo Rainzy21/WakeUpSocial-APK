@@ -25,7 +25,7 @@ class AuthRepository {
       password: password,
       data: {
         'name': name,
-        if (phone != null) 'phone': phone,
+        'phone': ?phone,
       },
     );
   }

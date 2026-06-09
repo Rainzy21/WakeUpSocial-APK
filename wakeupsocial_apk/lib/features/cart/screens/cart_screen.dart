@@ -496,7 +496,7 @@ class _CartSkeleton extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: 3,
-      itemBuilder: (_, __) => Padding(
+      itemBuilder: (_, _) => Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Container(
           padding: const EdgeInsets.all(12),

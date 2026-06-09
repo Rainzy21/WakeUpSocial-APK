@@ -34,8 +34,8 @@ class OrderRepository {
       'user_id': userId,
       'payment_method': paymentMethod.name,
       'total_price': totalPrice,
-      if (tableNumber != null) 'table_number': tableNumber,
-      if (notes != null) 'notes': notes,
+      'table_number': ?tableNumber,
+      'notes': ?notes,
     }).select().single();
 
     final orderId = orderResponse['id'] as String;
@@ -77,7 +77,7 @@ class OrderRepository {
         .eq('id', orderId)
         .single();
 
-    return OrderModel.fromJson(response as Map<String, dynamic>);
+    return OrderModel.fromJson(response);
   }
 
   /// Returns a real-time stream for a specific order.
@@ -110,6 +110,6 @@ class OrderRepository {
         .select('*, order_items(*)')
         .single();
 
-    return OrderModel.fromJson(response as Map<String, dynamic>);
+    return OrderModel.fromJson(response);
   }
 }

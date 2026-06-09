@@ -50,7 +50,7 @@ class MenuRepository {
         .maybeSingle();
 
     if (response == null) return null;
-    return MenuItemModel.fromJson(response as Map<String, dynamic>);
+    return MenuItemModel.fromJson(response);
   }
 
   /// Searches menu items by name keyword.

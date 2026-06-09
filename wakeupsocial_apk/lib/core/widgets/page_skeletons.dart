@@ -170,7 +170,7 @@ class MenuSkeleton extends StatelessWidget {
                 childAspectRatio: 0.72,
               ),
               itemCount: 6,
-              itemBuilder: (_, __) => const _MenuCardSkeleton(),
+              itemBuilder: (_, _) => const _MenuCardSkeleton(),
             ),
           ),
           const SizedBox(height: 24),
@@ -242,7 +242,7 @@ class OrderHistorySkeleton extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       itemCount: 5,
-      itemBuilder: (_, __) => Padding(
+      itemBuilder: (_, _) => Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Row(
           children: [

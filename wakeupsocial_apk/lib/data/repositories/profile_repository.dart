@@ -17,7 +17,7 @@ class ProfileRepository {
         .eq('id', authUser.id)
         .single();
 
-    return UserModel.fromJson(response as Map<String, dynamic>,
+    return UserModel.fromJson(response,
         email: authUser.email);
   }
 
@@ -36,14 +36,14 @@ class ProfileRepository {
         .from('profiles')
         .update({
           'name': name,
-          if (phone != null) 'phone': phone,
-          if (avatarUrl != null) 'avatar_url': avatarUrl,
+          'phone': ?phone,
+          'avatar_url': ?avatarUrl,
         })
         .eq('id', authUser.id)
         .select()
         .single();
 
-    return UserModel.fromJson(response as Map<String, dynamic>,
+    return UserModel.fromJson(response,
         email: authUser.email);
   }
 
