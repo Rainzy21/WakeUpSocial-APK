@@ -2,24 +2,48 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routes/app_routes.dart';
 import '../../../routes/navigation_helper.dart';
+import '../../../data/repositories/auth_repository.dart';
+import '../../../data/repositories/profile_repository.dart';
+import '../../../data/models/user_model.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_menu_item.dart';
 
 /// ============================================================
 /// ProfileScreen — Halaman profil user (tab Profile).
 /// ============================================================
-///
-/// Sesuai mockup desain, layout:
-/// 1. AppBar: "Wake Up Social" + logo icon + search icon
-/// 2. Profile card (avatar, nama, email, edit icon)
-/// 3. "Activity" section → Order History, Privacy & Policy
-/// 4. "General Settings" section → Help center/FAQ, Contact Us, Logout
-///
-/// **Data Source:**
-/// Saat ini menggunakan data statis.
-/// TODO: Ganti dengan data dari UserModel/Auth state.
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  UserModel? _profile;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfile();
+  }
+
+  Future<void> _fetchProfile() async {
+    try {
+      final profile = await ProfileRepository().getMyProfile();
+      if (mounted) {
+        setState(() {
+          _profile = profile;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        // Optional: Show error message
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,111 +74,117 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ─── PROFILE CARD ─────────────────────────────────
-            ProfileHeader(
-              name: 'Example',
-              email: 'Example@gmail.com',
-              onEditTap: () => Navigator.pushNamed(context, AppRoutes.editProfile),
-            ),
-            const SizedBox(height: 24),
-
-            // ─── ACTIVITY SECTION ─────────────────────────────
-            const Padding(
-              padding: EdgeInsets.only(left: 4, bottom: 8),
-              child: Text(
-                'Activity',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ProfileMenuItem(
-                    icon: Icons.access_time,
-                    label: 'Order History',
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.orderHistory),
+                  // ─── PROFILE CARD ─────────────────────────────────
+                  ProfileHeader(
+                    name: _profile?.name ?? 'Unknown User',
+                    email: _profile?.email ?? 'No email',
+                    onEditTap: () async {
+                      // Jika user edit profil, kita refresh setelah kembali
+                      await Navigator.pushNamed(context, AppRoutes.editProfile);
+                      _fetchProfile();
+                    },
                   ),
-                  const Divider(height: 1, indent: 56),
-                  ProfileMenuItem(
-                    icon: Icons.shield_outlined,
-                    label: 'Privacy & Policy',
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.privacyPolicy),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-            // ─── GENERAL SETTINGS SECTION ─────────────────────
-            const Padding(
-              padding: EdgeInsets.only(left: 4, bottom: 8),
-              child: Text(
-                'General Settings',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+                  // ─── ACTIVITY SECTION ─────────────────────────────
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text(
+                      'Activity',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        ProfileMenuItem(
+                          icon: Icons.access_time,
+                          label: 'Order History',
+                          onTap: () => Navigator.pushNamed(context, AppRoutes.orderHistory),
+                        ),
+                        const Divider(height: 1, indent: 56),
+                        ProfileMenuItem(
+                          icon: Icons.shield_outlined,
+                          label: 'Privacy & Policy',
+                          onTap: () => Navigator.pushNamed(context, AppRoutes.privacyPolicy),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ─── GENERAL SETTINGS SECTION ─────────────────────
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4, bottom: 8),
+                    child: Text(
+                      'General Settings',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        ProfileMenuItem(
+                          icon: Icons.help_outline,
+                          label: 'Help center / FAQ',
+                          onTap: () => Navigator.pushNamed(context, AppRoutes.helpCenter),
+                        ),
+                        const Divider(height: 1, indent: 56),
+                        ProfileMenuItem(
+                          icon: Icons.headset_mic_outlined,
+                          label: 'Contact Us',
+                          onTap: () => Navigator.pushNamed(context, AppRoutes.contactUs),
+                        ),
+                        const Divider(height: 1, indent: 56),
+                        ProfileMenuItem(
+                          icon: Icons.logout,
+                          label: 'Logout',
+                          onTap: () => _showLogoutDialog(context),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              child: Column(
-                children: [
-                  ProfileMenuItem(
-                    icon: Icons.help_outline,
-                    label: 'Help center / FAQ',
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.helpCenter),
-                  ),
-                  const Divider(height: 1, indent: 56),
-                  ProfileMenuItem(
-                    icon: Icons.headset_mic_outlined,
-                    label: 'Contact Us',
-                    onTap: () => Navigator.pushNamed(context, AppRoutes.contactUs),
-                  ),
-                  const Divider(height: 1, indent: 56),
-                  ProfileMenuItem(
-                    icon: Icons.logout,
-                    label: 'Logout',
-                    onTap: () => _showLogoutDialog(context),
-                  ),
-                ],
-              ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -207,9 +237,19 @@ class ProfileScreen extends StatelessWidget {
                 // Log out button
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      // Tutup dialog
                       Navigator.pop(ctx);
-                      NavigationHelper.toLogin(context);
+                      // Logout dari Supabase
+                      await AuthRepository().signOut();
+                      // Pindah ke halaman Login (dan hapus stack navigasi sebelumnya)
+                      if (context.mounted) {
+                        Navigator.pushNamedAndRemoveUntil(
+                          context, 
+                          AppRoutes.login, 
+                          (route) => false,
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,

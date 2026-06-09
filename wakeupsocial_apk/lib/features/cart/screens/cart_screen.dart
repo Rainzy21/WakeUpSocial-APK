@@ -31,26 +31,7 @@ class _CartScreenState extends State<CartScreen> {
   bool _isLoading = true;
 
   /// Mock cart items — TODO: Ganti dengan data dari cart repository
-  final List<Map<String, dynamic>> _cartItems = [
-    {
-      'name': 'Oat Milk Latte',
-      'price': 25000,
-      'qty': 1,
-      'image': Icons.coffee,
-    },
-    {
-      'name': 'Long Black',
-      'price': 20000,
-      'qty': 1,
-      'image': Icons.coffee_maker,
-    },
-    {
-      'name': 'Flat White',
-      'price': 23000,
-      'qty': 1,
-      'image': Icons.local_cafe,
-    },
-  ];
+  final List<Map<String, dynamic>> _cartItems = [];
 
   @override
   void initState() {

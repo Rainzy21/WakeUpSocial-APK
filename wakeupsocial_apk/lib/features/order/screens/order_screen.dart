@@ -32,11 +32,7 @@ class _OrderScreenState extends State<OrderScreen> {
   final _tableController = TextEditingController();
 
   /// Mock order items — TODO: Ambil dari cart state
-  final List<Map<String, dynamic>> _orderItems = [
-    {'name': 'Oat milk latte', 'qty': 1, 'price': 25000},
-    {'name': 'Long black', 'qty': 1, 'price': 20000},
-    {'name': 'Flat white', 'qty': 1, 'price': 23000},
-  ];
+  final List<Map<String, dynamic>> _orderItems = [];
 
   @override
   void initState() {

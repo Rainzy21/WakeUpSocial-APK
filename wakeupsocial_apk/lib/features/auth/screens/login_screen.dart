@@ -1,24 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../routes/navigation_helper.dart';
+import '../../../data/repositories/auth_repository.dart';
 
 /// ============================================================
 /// LoginScreen — Halaman login user.
 /// ============================================================
-///
-/// Menampilkan:
-/// - Logo / judul "WakeUpSocial"
-/// - Subjudul "Welcome Back"
-/// - Form: Email, Password
-/// - Tombol "Sign In"       → [NavigationHelper.toHome]
-/// - Social login buttons (Facebook, Google) — placeholder
-/// - Link "Don't have an account? Sign Up" → [NavigationHelper.toSignUp]
-///
-/// **Navigasi dari halaman ini:**
-/// - "Sign In"             → MainNavigation (home)
-/// - "Sign Up" link        → SignUpScreen
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -29,13 +19,79 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authRepo = AuthRepository();
+  
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSignIn() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Email dan password harus diisi')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _authRepo.signIn(email: email, password: password);
+      if (mounted) {
+        NavigationHelper.toHome(context);
+      }
+    } on AuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Terjadi kesalahan yang tidak terduga')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+    try {
+      final success = await _authRepo.signInWithGoogle();
+      // The browser will open. If the user completes the flow, the app will resume 
+      // via deep link. The Supabase SDK will automatically handle the session.
+      // We don't necessarily navigate here because the deep link handles it, 
+      // but if the future returns false, we can handle it.
+      if (!success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal sign in dengan Google')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -50,7 +106,6 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 40),
 
               // ─── LOGO / JUDUL ──────────────────────────────
-              // TODO: Ganti dengan Image.asset('assets/images/logo.png')
               const Text(
                 'WAKE UP\nSOCIAL',
                 textAlign: TextAlign.center,
@@ -100,11 +155,12 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 28),
 
               // ─── TOMBOL SIGN IN ────────────────────────────
-              // Untuk demo: langsung navigasi ke Home tanpa validasi backend
-              CustomButton(
-                text: 'Sign In',
-                onPressed: () => NavigationHelper.toHome(context),
-              ),
+              _isLoading
+                  ? const CircularProgressIndicator(color: AppColors.primary)
+                  : CustomButton(
+                      text: 'Sign In',
+                      onPressed: _handleSignIn,
+                    ),
               const SizedBox(height: 24),
 
               // ─── DIVIDER "Or Sign Up With" ─────────────────
@@ -127,13 +183,12 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
 
               // ─── SOCIAL LOGIN BUTTONS ──────────────────────
-              // Placeholder — belum terintegrasi
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildSocialButton(Icons.facebook, 'Facebook'),
+                  _buildSocialButton(Icons.facebook, 'Facebook', () {}),
                   const SizedBox(width: 12),
-                  _buildSocialButton(Icons.g_mobiledata, 'Google'),
+                  _buildSocialButton(Icons.g_mobiledata, 'Google', _handleGoogleSignIn),
                 ],
               ),
               const SizedBox(height: 24),
@@ -170,28 +225,32 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   /// Widget tombol social login (Facebook / Google).
-  Widget _buildSocialButton(IconData icon, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 20, color: AppColors.textPrimary),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
+  Widget _buildSocialButton(IconData icon, String label, VoidCallback onTap) {
+    return InkWell(
+      onTap: _isLoading ? null : onTap,
+      borderRadius: BorderRadius.circular(30),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: AppColors.divider),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 20, color: AppColors.textPrimary),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

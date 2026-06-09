@@ -3,6 +3,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/widgets/page_skeletons.dart';
 import '../../../routes/navigation_helper.dart';
+import '../../../data/models/user_model.dart';
+import '../../../data/repositories/profile_repository.dart';
 
 /// ============================================================
 /// EditProfileScreen — Halaman edit profil user.
@@ -25,16 +27,42 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isLoading = true;
-  final _firstNameController = TextEditingController(text: 'Asep');
-  final _lastNameController = TextEditingController(text: 'Karbu');
-  final _emailController = TextEditingController(text: 'Example@gmail.com');
+  UserModel? _profile;
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _emailController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) setState(() => _isLoading = false);
-    });
+    _fetchProfile();
+  }
+
+  Future<void> _fetchProfile() async {
+    try {
+      final profile = await ProfileRepository().getMyProfile();
+      if (mounted) {
+        setState(() {
+          _profile = profile;
+          if (profile != null) {
+            _emailController.text = profile.email;
+            final nameParts = profile.name.split(' ');
+            _firstNameController.text = nameParts.first;
+            if (nameParts.length > 1) {
+              _lastNameController.text = nameParts.sublist(1).join(' ');
+            }
+          }
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading profile: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -160,15 +188,37 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             _buildInputField(
               controller: _emailController,
               icon: Icons.mail_outline,
+              readOnly: true,
             ),
             const SizedBox(height: 32),
 
             // ─── CONFIRM EDIT BUTTON ─────────────────────────
             _HoverShadowButton(
-              label: 'Confrm edit',
-              onTap: () {
-                // TODO: Kirim data ke backend
-                NavigationHelper.back(context);
+              label: 'Confirm edit',
+              onTap: () async {
+                if (_profile == null) return;
+                setState(() => _isLoading = true);
+                try {
+                  final firstName = _firstNameController.text.trim();
+                  final lastName = _lastNameController.text.trim();
+                  final fullName = [firstName, lastName].where((s) => s.isNotEmpty).join(' ');
+                  
+                  await ProfileRepository().updateProfile(name: fullName);
+                  
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Profile updated successfully')),
+                    );
+                    NavigationHelper.back(context);
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to update profile: $e')),
+                    );
+                    setState(() => _isLoading = false);
+                  }
+                }
               },
             ),
           ],
@@ -182,18 +232,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildInputField({
     required TextEditingController controller,
     required IconData icon,
+    bool readOnly = false,
   }) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         border: Border.all(color: AppColors.divider),
-        color: Colors.white,
+        color: readOnly ? Colors.grey.shade100 : Colors.white,
       ),
       child: TextField(
         controller: controller,
-        style: const TextStyle(
+        readOnly: readOnly,
+        style: TextStyle(
           fontSize: 14,
-          color: AppColors.textPrimary,
+          color: readOnly ? AppColors.textSecondary : AppColors.textPrimary,
         ),
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

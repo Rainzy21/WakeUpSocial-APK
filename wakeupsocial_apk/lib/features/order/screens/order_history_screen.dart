@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routes/navigation_helper.dart';
+import '../../../data/models/order_model.dart';
+import '../../../data/repositories/order_repository.dart';
 
 /// ============================================================
 /// OrderHistoryScreen — Halaman riwayat pesanan (dari Profile).
@@ -12,8 +14,41 @@ import '../../../routes/navigation_helper.dart';
 ///   tanggal, badge "Selesai", icon receipt
 ///
 /// TODO: Ganti mock data dengan data dari API/repository.
-class OrderHistoryScreen extends StatelessWidget {
+class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
+
+  @override
+  State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
+}
+
+class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
+  bool _isLoading = true;
+  List<OrderModel> _orders = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOrders();
+  }
+
+  Future<void> _fetchOrders() async {
+    try {
+      final orders = await OrderRepository().getMyOrders();
+      if (mounted) {
+        setState(() {
+          _orders = orders;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading orders: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,36 +77,63 @@ class OrderHistoryScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: _mockOrders.isEmpty
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.receipt_long, size: 64, color: Colors.grey),
-                  SizedBox(height: 12),
-                  Text('Belum ada pesanan', style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              itemCount: _mockOrders.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 0),
-              itemBuilder: (context, index) {
-                final order = _mockOrders[index];
-                return _OrderHistoryCard(
-                  name: order['name']!,
-                  menuCount: order['menuCount']!,
-                  orderNumber: order['orderNumber']!,
-                  date: order['date']!,
-                  status: order['status']!,
-                  onTap: () => NavigationHelper.toOrderDetail(
-                    context,
-                    orderId: order['orderNumber']!,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : _orders.isEmpty
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.receipt_long, size: 64, color: Colors.grey),
+                      SizedBox(height: 12),
+                      Text('Belum ada pesanan', style: TextStyle(color: Colors.grey)),
+                    ],
                   ),
-                );
-              },
-            ),
+                )
+              : ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  itemCount: _orders.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 0),
+                  itemBuilder: (context, index) {
+                    final order = _orders[index];
+                    
+                    final menuCount = order.items.fold<int>(0, (sum, item) => sum + item.quantity);
+                    final orderNumber = order.id.substring(0, 6).toUpperCase();
+                    final dateStr = '${order.createdAt.day.toString().padLeft(2, '0')}-${order.createdAt.month.toString().padLeft(2, '0')}-${order.createdAt.year}';
+                    
+                    String name = 'Order';
+                    if (order.items.isNotEmpty) {
+                      name = order.items.first.name;
+                      if (order.items.length > 1) {
+                        name += ' +${order.items.length - 1} lainnya';
+                      }
+                    }
+
+                    Color statusColor = const Color(0xFF388E3C);
+                    Color statusBgColor = const Color(0xFFE8F5E9);
+                    if (order.status == OrderStatus.pending) {
+                      statusColor = Colors.orange;
+                      statusBgColor = Colors.orange.shade50;
+                    } else if (order.status == OrderStatus.cancelled) {
+                      statusColor = Colors.red;
+                      statusBgColor = Colors.red.shade50;
+                    }
+
+                    return _OrderHistoryCard(
+                      name: name,
+                      menuCount: menuCount.toString(),
+                      orderNumber: orderNumber,
+                      date: dateStr,
+                      status: order.status.displayName,
+                      statusColor: statusColor,
+                      statusBgColor: statusBgColor,
+                      onTap: () => NavigationHelper.toOrderDetail(
+                        context,
+                        orderId: order.id,
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }
@@ -84,6 +146,8 @@ class _OrderHistoryCard extends StatelessWidget {
   final String orderNumber;
   final String date;
   final String status;
+  final Color statusColor;
+  final Color statusBgColor;
   final VoidCallback? onTap;
 
   const _OrderHistoryCard({
@@ -92,6 +156,8 @@ class _OrderHistoryCard extends StatelessWidget {
     required this.orderNumber,
     required this.date,
     required this.status,
+    this.statusColor = const Color(0xFF388E3C),
+    this.statusBgColor = const Color(0xFFE8F5E9),
     this.onTap,
   });
 
@@ -177,15 +243,15 @@ class _OrderHistoryCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
               decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
+                color: statusBgColor,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
                 status,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF388E3C),
+                  color: statusColor,
                 ),
               ),
             ),
@@ -204,12 +270,3 @@ class _OrderHistoryCard extends StatelessWidget {
   }
 }
 
-/// Mock data order history (sesuai mockup).
-/// TODO: Ganti dengan data dari repository/API.
-final List<Map<String, String>> _mockOrders = [
-  {'name': 'Nabil jaringan', 'menuCount': '3', 'orderNumber': '03', 'date': '12-05-2026', 'status': 'Selesai'},
-  {'name': 'Nabil jaringan', 'menuCount': '3', 'orderNumber': '03', 'date': '12-05-2026', 'status': 'Selesai'},
-  {'name': 'Nabil jaringan', 'menuCount': '3', 'orderNumber': '03', 'date': '12-05-2026', 'status': 'Selesai'},
-  {'name': 'Nabil jaringan', 'menuCount': '3', 'orderNumber': '03', 'date': '12-05-2026', 'status': 'Selesai'},
-  {'name': 'Nabil jaringan', 'menuCount': '3', 'orderNumber': '03', 'date': '12-05-2026', 'status': 'Selesai'},
-];
