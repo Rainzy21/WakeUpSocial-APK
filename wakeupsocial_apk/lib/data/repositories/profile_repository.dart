@@ -26,11 +26,16 @@ class ProfileRepository {
   /// Only [name], [phone], and [avatarUrl] can be updated.
   Future<UserModel> updateProfile({
     required String name,
+    String? email,
     String? phone,
     String? avatarUrl,
   }) async {
     final authUser = _supabase.auth.currentUser;
     if (authUser == null) throw Exception('User belum login');
+
+    if (email != null && email.isNotEmpty && email != authUser.email) {
+      await _supabase.auth.updateUser(UserAttributes(email: email));
+    }
 
     final response = await _supabase
         .from('profiles')

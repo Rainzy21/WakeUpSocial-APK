@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../routes/navigation_helper.dart';
+import '../../../core/providers/cart_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// ============================================================
 /// OrderScreen — Halaman checkout / konfirmasi pesanan.
@@ -27,11 +30,9 @@ class OrderScreen extends StatefulWidget {
 
 class _OrderScreenState extends State<OrderScreen> {
   bool _isLoading = true;
+  bool _isCheckingOut = false;
   final _nameController = TextEditingController();
   final _tableController = TextEditingController();
-
-  /// Mock order items — TODO: Ambil dari cart state
-  final List<Map<String, dynamic>> _orderItems = [];
 
   @override
   void initState() {
@@ -48,9 +49,6 @@ class _OrderScreenState extends State<OrderScreen> {
     super.dispose();
   }
 
-  int get _totalPrice =>
-      _orderItems.fold(0, (sum, item) => sum + (item['price'] as int) * (item['qty'] as int));
-
   String _formatPrice(int price) {
     final str = price.toString();
     final buffer = StringBuffer();
@@ -63,6 +61,9 @@ class _OrderScreenState extends State<OrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cart = Provider.of<CartProvider>(context);
+    final _orderItems = cart.items;
+    final _totalPrice = cart.totalPrice;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -136,14 +137,14 @@ class _OrderScreenState extends State<OrderScreen> {
               const SizedBox(height: 24),
 
               // ─── ORDER SUMMARY ──────────────────────────────
-              _buildOrderSummary(),
+              _buildOrderSummary(_orderItems, _totalPrice),
             ],
           ),
         ),
       ),
 
       // ─── BOTTOM: BUAT PESANAN ─────────────────────────────
-      bottomNavigationBar: _isLoading ? null : _buildBottomButton(),
+      bottomNavigationBar: _isLoading ? null : _buildBottomButton(cart),
     );
   }
 
@@ -189,7 +190,7 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-  Widget _buildOrderSummary() {
+  Widget _buildOrderSummary(List<CartItem> orderItems, int totalPrice) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -218,20 +219,20 @@ class _OrderScreenState extends State<OrderScreen> {
           const SizedBox(height: 14),
 
           // Item list
-          ..._orderItems.map((item) => Padding(
+          ...orderItems.map((item) => Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${item['name']}  x${item['qty']}',
+                  '${item.name}  x${item.quantity}',
                   style: TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
                   ),
                 ),
                 Text(
-                  _formatPrice(item['price'] * item['qty']),
+                  _formatPrice(item.price * item.quantity),
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -262,7 +263,7 @@ class _OrderScreenState extends State<OrderScreen> {
                 ),
               ),
               Text(
-                _formatPrice(_totalPrice),
+                _formatPrice(totalPrice),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -276,7 +277,7 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-  Widget _buildBottomButton() {
+  Widget _buildBottomButton(CartProvider cart) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -292,15 +293,85 @@ class _OrderScreenState extends State<OrderScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: _HoverButton(
-            label: 'Buat Pesanan',
-            onTap: () {
-              // TODO: Kirim order ke backend
-              NavigationHelper.toOrderTracking(context, orderId: '77421');
-            },
+            label: _isCheckingOut ? 'Loading...' : 'Buat Pesanan',
+            onTap: _isCheckingOut ? () {} : () => _submitOrder(cart),
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _submitOrder(CartProvider cart) async {
+    final name = _nameController.text.trim();
+    final tableStr = _tableController.text.trim();
+
+    if (name.isEmpty || tableStr.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nama dan Nomor Meja harus diisi')),
+      );
+      return;
+    }
+
+    if (cart.items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Keranjang kosong')),
+      );
+      return;
+    }
+
+    setState(() => _isCheckingOut = true);
+
+    try {
+      final supabase = Supabase.instance.client;
+      final userId = supabase.auth.currentUser?.id;
+
+      // 1. Create order
+      final Map<String, dynamic> orderData = {
+        'status': 'pending',
+        'payment_method': 'cash',
+        'payment_status': 'unpaid',
+        'total_price': cart.totalPrice,
+        'table_number': tableStr,
+        'notes': 'Atas nama: $name',
+      };
+
+      // Jika user sudah login, sertakan user_id
+      if (userId != null) {
+        orderData['user_id'] = userId;
+      }
+
+      final orderResponse = await supabase.from('orders').insert(orderData).select().single();
+
+      final orderId = orderResponse['id'];
+
+      // 2. Create order items
+      final orderItemsData = cart.items.map((item) => {
+        'order_id': orderId,
+        'name': item.name,
+        'price': item.price,
+        'quantity': item.quantity,
+      }).toList();
+
+      await supabase.from('order_items').insert(orderItemsData);
+
+      // 3. Clear cart
+      cart.clearCart();
+
+      // 4. Navigate to tracking screen
+      if (mounted) {
+        NavigationHelper.toOrderTracking(context, orderId: orderId);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal membuat pesanan: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isCheckingOut = false);
+      }
+    }
   }
 }
 

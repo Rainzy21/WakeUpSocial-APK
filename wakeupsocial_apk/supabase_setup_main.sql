@@ -223,6 +223,18 @@ CREATE POLICY "Users can create their own orders"
     TO authenticated
     WITH CHECK (auth.uid() = user_id);
 
+-- Tamu (anonymous) bisa membuat order
+CREATE POLICY "Anonymous users can create orders"
+    ON public.orders FOR INSERT
+    TO anon
+    WITH CHECK (user_id IS NULL);
+
+-- Tamu (anonymous) bisa melihat order (menggunakan UUID yang sulit ditebak)
+CREATE POLICY "Anonymous users can view orders"
+    ON public.orders FOR SELECT
+    TO anon
+    USING (user_id IS NULL);
+
 -- Service_role (admin web) bisa akses dan update semua order (untuk ubah status)
 CREATE POLICY "Service role full access on orders"
     ON public.orders FOR ALL
@@ -254,6 +266,30 @@ CREATE POLICY "Users can insert items for their own orders"
             SELECT 1 FROM public.orders
             WHERE orders.id = order_items.order_id
             AND orders.user_id = auth.uid()
+        )
+    );
+
+-- Tamu (anonymous) bisa melihat item dari ordernya
+CREATE POLICY "Anonymous users can view their own order items"
+    ON public.order_items FOR SELECT
+    TO anon
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.orders
+            WHERE orders.id = order_items.order_id
+            AND orders.user_id IS NULL
+        )
+    );
+
+-- Tamu (anonymous) bisa menambah item untuk ordernya
+CREATE POLICY "Anonymous users can insert items for their orders"
+    ON public.order_items FOR INSERT
+    TO anon
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM public.orders
+            WHERE orders.id = order_items.order_id
+            AND orders.user_id IS NULL
         )
     );
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../routes/navigation_helper.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// ============================================================
 /// OrderTrackingScreen — Halaman tracking status pesanan.
@@ -29,10 +30,10 @@ class OrderTrackingScreen extends StatefulWidget {
 
 class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   bool _isLoading = true;
+  Map<String, dynamic>? _order;
 
   /// Status saat ini (0-3): Unpaid, Accepted, In Progress, Ready
-  /// TODO: Ambil dari backend via WebSocket/polling
-  final int _currentStep = 1; // "Accepted"
+  int _currentStep = 0; 
 
   final List<_TrackingStep> _steps = const [
     _TrackingStep(icon: Icons.check_circle_outline, label: 'Unpaid'),
@@ -44,9 +45,40 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) setState(() => _isLoading = false);
-    });
+    _fetchOrder();
+  }
+
+  Future<void> _fetchOrder() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final response = await supabase
+          .from('orders')
+          .select()
+          .eq('id', widget.orderId)
+          .single();
+
+      if (mounted) {
+        setState(() {
+          _order = response;
+          _currentStep = _mapStatusToStep(_order!['status']);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  int _mapStatusToStep(String status) {
+    switch (status) {
+      case 'pending': return 1; // accepted
+      case 'processing': return 2; // in progress
+      case 'ready': return 3; // ready
+      case 'delivered': return 3; // ready
+      default: return 0; // unpaid
+    }
   }
 
   @override
@@ -98,7 +130,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
             children: [
               // ─── ORDER HEADER ────────────────────────────────
               Text(
-                'Order #${widget.orderId}',
+                'Order #${widget.orderId.split('-').first}',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
@@ -120,6 +152,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               _DeliveryStatusCard(
                 steps: _steps,
                 currentStep: _currentStep,
+                orderData: _order,
               ),
             ],
           ),
@@ -176,10 +209,12 @@ class _TrackingStep {
 class _DeliveryStatusCard extends StatefulWidget {
   final List<_TrackingStep> steps;
   final int currentStep;
+  final Map<String, dynamic>? orderData;
 
   const _DeliveryStatusCard({
     required this.steps,
     required this.currentStep,
+    this.orderData,
   });
 
   @override
@@ -262,6 +297,16 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
         ),
       ),
     );
+  }
+
+  String _formatPrice(int price) {
+    final str = price.toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
+      buffer.write(str[i]);
+    }
+    return 'Rp $buffer';
   }
 
   String _getStatusLabel() {
@@ -365,6 +410,13 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
 
   /// ─── INFO SECTION ──────────────────────────────────────────
   Widget _buildInfoSection() {
+    final data = widget.orderData;
+    if (data == null) return const SizedBox();
+
+    final name = (data['notes'] as String?)?.replaceAll('Atas nama: ', '') ?? '-';
+    final tableStr = data['table_number']?.toString() ?? '-';
+    final total = data['total_price'] != null ? (data['total_price'] as num).toInt() : 0;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -373,19 +425,19 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
       ),
       child: Column(
         children: [
-          _infoRow('Nama', 'nabil jaringan'),
+          _infoRow('Nama', name),
           Container(
             height: 1,
             color: AppColors.divider.withValues(alpha: 0.5),
             margin: const EdgeInsets.symmetric(vertical: 8),
           ),
-          _infoRow('No table', '3'),
+          _infoRow('No table', tableStr),
           Container(
             height: 1,
             color: AppColors.divider.withValues(alpha: 0.5),
             margin: const EdgeInsets.symmetric(vertical: 8),
           ),
-          _infoRow('Total', 'Rp 68.000', isBold: true),
+          _infoRow('Total', _formatPrice(total), isBold: true),
         ],
       ),
     );

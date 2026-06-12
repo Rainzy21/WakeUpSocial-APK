@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routes/navigation_helper.dart';
+import '../../../core/providers/cart_provider.dart';
+import 'package:provider/provider.dart';
 import '../widgets/menu_category_chips.dart';
 import '../widgets/menu_promo_carousel.dart';
 import '../widgets/menu_item_card.dart';
@@ -92,6 +94,26 @@ class _MenuScreenState extends State<MenuScreen> {
 
       return true;
     }).toList();
+  }
+
+  int _parsePrice(String priceStr) {
+    final cleanStr = priceStr.replaceAll('Rp', '').replaceAll('.', '').trim();
+    return int.tryParse(cleanStr) ?? 0;
+  }
+
+  void _handleAddToCart(Map<String, String> item) {
+    final cart = Provider.of<CartProvider>(context, listen: false);
+    cart.addToCart(
+      name: item['name']!,
+      price: _parsePrice(item['price']!),
+      imageUrl: item['imageUrl'] ?? '',
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${item['name']} ditambahkan ke keranjang'),
+        duration: const Duration(seconds: 1),
+      ),
+    );
   }
 
   @override
@@ -242,7 +264,7 @@ class _MenuScreenState extends State<MenuScreen> {
           onItemTap: (_) {
             // TODO: Navigasi ke detail produk
           },
-          onAddToCart: (_) => NavigationHelper.toCart(context),
+          onAddToCart: (item) => _handleAddToCart(item),
         ),
       );
     }
@@ -295,7 +317,7 @@ class _MenuScreenState extends State<MenuScreen> {
                 price: item['price']!,
                 imageUrl: item['imageUrl'],
                 onTap: () {},
-                onAddToCart: () => NavigationHelper.toCart(context),
+                onAddToCart: () => _handleAddToCart(item),
               );
             },
           ),

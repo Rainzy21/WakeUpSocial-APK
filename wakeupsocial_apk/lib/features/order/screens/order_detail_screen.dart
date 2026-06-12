@@ -3,6 +3,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/widgets/page_skeletons.dart';
 import '../../../routes/navigation_helper.dart';
+import '../../../data/models/order_model.dart';
+import '../../../data/repositories/order_repository.dart';
 
 /// ============================================================
 /// OrderDetailScreen — Halaman detail satu pesanan.
@@ -28,13 +30,41 @@ class OrderDetailScreen extends StatefulWidget {
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   bool _isLoading = true;
+  OrderModel? _order;
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) setState(() => _isLoading = false);
-    });
+    _fetchOrder();
+  }
+
+  Future<void> _fetchOrder() async {
+    try {
+      final order = await OrderRepository().getOrderById(widget.orderId);
+      if (mounted) {
+        setState(() {
+          _order = order;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat pesanan: $e')),
+        );
+      }
+    }
+  }
+
+  String _formatPrice(double price) {
+    final str = price.toInt().toString();
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
+      buffer.write(str[i]);
+    }
+    return 'Rp $buffer';
   }
 
   @override
@@ -68,7 +98,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       body: ShimmerLoading(
         isLoading: _isLoading,
         skeleton: const OrderDetailSkeleton(),
-        child: SingleChildScrollView(
+        child: _order == null 
+            ? const Center(child: Text('Pesanan tidak ditemukan'))
+            : SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -84,7 +116,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ),
             ),
             const SizedBox(height: 6),
-            _buildReadonlyField('Nabil jaringan'),
+            _buildReadonlyField(_order!.notes?.replaceAll('Atas nama: ', '') ?? '-'),
             const SizedBox(height: 16),
 
             // ─── ORDER NUMBER ────────────────────────────────
@@ -97,7 +129,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ),
             ),
             const SizedBox(height: 6),
-            _buildReadonlyField('Table number'),
+            _buildReadonlyField('#${_order!.id.split('-').first.toUpperCase()}'),
+            const SizedBox(height: 16),
+
+            // ─── TABLE NUMBER ────────────────────────────────
+            const Text(
+              'Table number',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            _buildReadonlyField(_order!.tableNumber ?? '-'),
             const SizedBox(height: 24),
 
             // ─── ORDER SUMMARY ───────────────────────────────
@@ -122,20 +167,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   const SizedBox(height: 14),
 
                   // Item list
-                  ..._mockItems.map((item) => Padding(
+                  ..._order!.items.map((item) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '${item['name']}  x${item['qty']}',
+                          '${item.name}  x${item.quantity}',
                           style: TextStyle(
                             fontSize: 13,
                             color: AppColors.textSecondary,
                           ),
                         ),
                         Text(
-                          item['price']!,
+                          _formatPrice(item.price * item.quantity),
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -151,8 +196,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   // Total
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text(
+                    children: [
+                      const Text(
                         'Total',
                         style: TextStyle(
                           fontSize: 14,
@@ -161,8 +206,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                       ),
                       Text(
-                        'Rp 68.000',
-                        style: TextStyle(
+                        _formatPrice(_order!.totalPrice),
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
@@ -200,11 +245,3 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     );
   }
 }
-
-/// Mock data item order (sesuai mockup).
-/// TODO: Ganti dengan data dari order repository.
-final List<Map<String, String>> _mockItems = [
-  {'name': 'Oat milk latte', 'qty': '1', 'price': 'Rp 25.000'},
-  {'name': 'Long black', 'qty': '1', 'price': 'Rp 20.000'},
-  {'name': 'Flat white', 'qty': '1', 'price': 'Rp 23.000'},
-];

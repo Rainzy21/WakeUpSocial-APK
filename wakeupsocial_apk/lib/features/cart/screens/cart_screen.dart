@@ -3,6 +3,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/widgets/page_skeletons.dart';
 import '../../../routes/navigation_helper.dart';
+import '../../../core/providers/cart_provider.dart';
+import 'package:provider/provider.dart';
 
 /// ============================================================
 /// CartScreen — Halaman keranjang belanja.
@@ -30,9 +32,6 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   bool _isLoading = true;
 
-  /// Mock cart items — TODO: Ganti dengan data dari cart repository
-  final List<Map<String, dynamic>> _cartItems = [];
-
   @override
   void initState() {
     super.initState();
@@ -40,9 +39,6 @@ class _CartScreenState extends State<CartScreen> {
       if (mounted) setState(() => _isLoading = false);
     });
   }
-
-  int get _totalPrice =>
-      _cartItems.fold(0, (sum, item) => sum + (item['price'] as int) * (item['qty'] as int));
 
   String _formatPrice(int price) {
     final str = price.toString();
@@ -54,22 +50,12 @@ class _CartScreenState extends State<CartScreen> {
     return 'Rp $buffer';
   }
 
-  void _incrementQty(int index) {
-    setState(() => _cartItems[index]['qty']++);
-  }
-
-  void _decrementQty(int index) {
-    if (_cartItems[index]['qty'] > 1) {
-      setState(() => _cartItems[index]['qty']--);
-    }
-  }
-
-  void _removeItem(int index) {
-    setState(() => _cartItems.removeAt(index));
-  }
-
   @override
   Widget build(BuildContext context) {
+    final cart = Provider.of<CartProvider>(context);
+    final _cartItems = cart.items;
+    final _totalPrice = cart.totalPrice;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -103,13 +89,13 @@ class _CartScreenState extends State<CartScreen> {
       body: ShimmerLoading(
         isLoading: _isLoading,
         skeleton: const _CartSkeleton(),
-        child: _cartItems.isEmpty ? _buildEmptyState() : _buildCartList(),
+        child: _cartItems.isEmpty ? _buildEmptyState() : _buildCartList(cart),
       ),
 
       // ─── BOTTOM BAR: Total + Checkout ─────────────────────
       bottomNavigationBar: _isLoading || _cartItems.isEmpty
           ? null
-          : _buildBottomBar(),
+          : _buildBottomBar(_totalPrice),
     );
   }
 
@@ -150,7 +136,8 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCartList() {
+  Widget _buildCartList(CartProvider cart) {
+    final _cartItems = cart.items;
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -158,9 +145,9 @@ class _CartScreenState extends State<CartScreen> {
       itemBuilder: (context, index) {
         final item = _cartItems[index];
         return Dismissible(
-          key: ValueKey('${item['name']}_$index'),
+          key: ValueKey('${item.name}_$index'),
           direction: DismissDirection.endToStart,
-          onDismissed: (_) => _removeItem(index),
+          onDismissed: (_) => cart.removeItem(index),
           background: Container(
             alignment: Alignment.centerRight,
             margin: const EdgeInsets.only(bottom: 12),
@@ -172,20 +159,20 @@ class _CartScreenState extends State<CartScreen> {
             child: Icon(Icons.delete_outline, color: AppColors.error, size: 24),
           ),
           child: _CartItemCard(
-            name: item['name'],
-            price: _formatPrice(item['price']),
-            qty: item['qty'],
-            iconData: item['image'],
-            onIncrement: () => _incrementQty(index),
-            onDecrement: () => _decrementQty(index),
-            onDelete: () => _removeItem(index),
+            name: item.name,
+            price: _formatPrice(item.price),
+            qty: item.quantity,
+            iconData: Icons.fastfood_outlined, // TODO: Update to use network image if needed
+            onIncrement: () => cart.incrementQty(index),
+            onDecrement: () => cart.decrementQty(index),
+            onDelete: () => cart.removeItem(index),
           ),
         );
       },
     );
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomBar(int totalPrice) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -216,7 +203,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _formatPrice(_totalPrice),
+                    _formatPrice(totalPrice),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
