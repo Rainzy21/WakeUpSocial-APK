@@ -54,4 +54,52 @@ enum OrderStatusV2 {
         return -1;
     }
   }
+
+  /// Typical prep window (minutes) from order creation for in-progress statuses.
+  int get estimatedPrepMinutes {
+    switch (this) {
+      case OrderStatusV2.submitted:
+        return 15;
+      case OrderStatusV2.reviewing:
+        return 12;
+      case OrderStatusV2.confirmed:
+        return 8;
+      case OrderStatusV2.ready:
+      case OrderStatusV2.completed:
+      case OrderStatusV2.cancelled:
+      case OrderStatusV2.expired:
+        return 0;
+    }
+  }
+}
+
+/// Subtitle shown on the order tracking screen, derived from status and timestamps.
+String orderTrackingEtaMessage({
+  required OrderStatusV2 status,
+  DateTime? createdAt,
+  DateTime? updatedAt,
+}) {
+  switch (status) {
+    case OrderStatusV2.ready:
+      return 'Pesanan siap diambil';
+    case OrderStatusV2.completed:
+      return 'Pesanan selesai';
+    case OrderStatusV2.cancelled:
+      return 'Pesanan dibatalkan';
+    case OrderStatusV2.expired:
+      return 'Pesanan kedaluwarsa';
+    case OrderStatusV2.submitted:
+    case OrderStatusV2.reviewing:
+    case OrderStatusV2.confirmed:
+      final reference = updatedAt ?? createdAt;
+      if (reference != null) {
+        final elapsed = DateTime.now().difference(reference).inMinutes;
+        final remaining = (status.estimatedPrepMinutes - elapsed).clamp(
+          1,
+          status.estimatedPrepMinutes,
+        );
+        return 'Perkiraan $remaining menit lagi';
+      }
+      return 'Perkiraan ${status.estimatedPrepMinutes} menit lagi';
+  }
 }

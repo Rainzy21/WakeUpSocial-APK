@@ -36,13 +36,9 @@ class LandingSkeleton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                Expanded(
-                  child: SkeletonBox(height: 180, borderRadius: 12),
-                ),
+                Expanded(child: SkeletonBox(height: 180, borderRadius: 12)),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: SkeletonBox(height: 180, borderRadius: 12),
-                ),
+                Expanded(child: SkeletonBox(height: 180, borderRadius: 12)),
               ],
             ),
           ),
@@ -68,22 +64,25 @@ class LandingSkeleton extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: List.generate(4, (i) => Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: SizedBox(
-                  width: 140,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SkeletonBox(width: 140, height: 110, borderRadius: 12),
-                      const SizedBox(height: 10),
-                      SkeletonLine(width: 100, height: 12),
-                      const SizedBox(height: 6),
-                      SkeletonLine(width: 70, height: 10),
-                    ],
+              children: List.generate(
+                4,
+                (i) => Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: SizedBox(
+                    width: 140,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SkeletonBox(width: 140, height: 110, borderRadius: 12),
+                        const SizedBox(height: 10),
+                        SkeletonLine(width: 100, height: 12),
+                        const SizedBox(height: 6),
+                        SkeletonLine(width: 70, height: 10),
+                      ],
+                    ),
                   ),
                 ),
-              )),
+              ),
             ),
           ),
           const SizedBox(height: 20),
@@ -132,14 +131,17 @@ class MenuSkeleton extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: List.generate(5, (i) => Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: SkeletonBox(
-                  width: 70 + (i * 5).toDouble(),
-                  height: 36,
-                  borderRadius: 20,
+              children: List.generate(
+                5,
+                (i) => Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: SkeletonBox(
+                    width: 70 + (i * 5).toDouble(),
+                    height: 36,
+                    borderRadius: 20,
+                  ),
                 ),
-              )),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -197,10 +199,7 @@ class _MenuCardSkeleton extends StatelessWidget {
           // Image placeholder
           AspectRatio(
             aspectRatio: 1.2,
-            child: SkeletonBox(
-              height: double.infinity,
-              borderRadius: 12,
-            ),
+            child: SkeletonBox(height: double.infinity, borderRadius: 12),
           ),
           Padding(
             padding: const EdgeInsets.all(10),
@@ -405,17 +404,20 @@ class ProfileFormSkeleton extends StatelessWidget {
           const SizedBox(height: 32),
 
           // Form fields
-          ...List.generate(fieldCount, (_) => Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SkeletonLine(width: 70, height: 11),
-                const SizedBox(height: 8),
-                SkeletonBox(height: 48, borderRadius: 28),
-              ],
+          ...List.generate(
+            fieldCount,
+            (_) => Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SkeletonLine(width: 70, height: 11),
+                  const SizedBox(height: 8),
+                  SkeletonBox(height: 48, borderRadius: 28),
+                ],
+              ),
             ),
-          )),
+          ),
           const SizedBox(height: 12),
 
           // Button
@@ -466,16 +468,19 @@ class OrderDetailSkeleton extends StatelessWidget {
               children: [
                 SkeletonLine(width: 100, height: 13),
                 const SizedBox(height: 16),
-                ...List.generate(3, (_) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SkeletonLine(width: 120, height: 11),
-                      SkeletonLine(width: 70, height: 11),
-                    ],
+                ...List.generate(
+                  3,
+                  (_) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SkeletonLine(width: 120, height: 11),
+                        SkeletonLine(width: 70, height: 11),
+                      ],
+                    ),
                   ),
-                )),
+                ),
                 const Divider(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -520,21 +525,24 @@ class ContentPageSkeleton extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Sections
-            ...List.generate(5, (i) => Padding(
-              padding: const EdgeInsets.only(bottom: 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SkeletonLine(width: 180, height: 12),
-                  const SizedBox(height: 8),
-                  SkeletonLine(width: double.infinity, height: 10),
-                  const SizedBox(height: 4),
-                  SkeletonLine(width: double.infinity, height: 10),
-                  const SizedBox(height: 4),
-                  SkeletonLine(width: 200, height: 10),
-                ],
+            ...List.generate(
+              5,
+              (i) => Padding(
+                padding: const EdgeInsets.only(bottom: 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonLine(width: 180, height: 12),
+                    const SizedBox(height: 8),
+                    SkeletonLine(width: double.infinity, height: 10),
+                    const SizedBox(height: 4),
+                    SkeletonLine(width: double.infinity, height: 10),
+                    const SizedBox(height: 4),
+                    SkeletonLine(width: 200, height: 10),
+                  ],
+                ),
               ),
-            )),
+            ),
           ],
         ),
       ),

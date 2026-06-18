@@ -22,7 +22,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _authRepo = AuthRepository();
-  
+
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _isLoading = false;
@@ -42,17 +42,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Semua kolom harus diisi')),
-      );
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Semua kolom harus diisi')));
       return;
     }
 
     if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password tidak cocok')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Password tidak cocok')));
       return;
     }
 
@@ -61,15 +64,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
     try {
       await _authRepo.signUp(email: email, password: password, name: name);
       if (mounted) {
-        // Setelah sukses signup, biasanya session otomatis terbuat 
+        // Setelah sukses signup, biasanya session otomatis terbuat
         // jika tidak menggunakan email confirmation.
         NavigationHelper.toHome(context);
       }
     } on AuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } catch (e) {
       if (mounted) {
@@ -95,9 +98,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) {
@@ -164,7 +167,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 controller: _passwordController,
                 obscureText: _obscurePassword,
                 suffixIcon: IconButton(
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
                   icon: Icon(
                     _obscurePassword ? Icons.visibility_off : Icons.visibility,
                     color: AppColors.textSecondary,
@@ -181,7 +185,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 controller: _confirmPasswordController,
                 obscureText: _obscureConfirm,
                 suffixIcon: IconButton(
-                  onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                  onPressed: () =>
+                      setState(() => _obscureConfirm = !_obscureConfirm),
                   icon: Icon(
                     _obscureConfirm ? Icons.visibility_off : Icons.visibility,
                     color: AppColors.textSecondary,
@@ -194,10 +199,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               // ─── TOMBOL SIGN UP ────────────────────────────
               _isLoading
                   ? const CircularProgressIndicator(color: AppColors.primary)
-                  : CustomButton(
-                      text: 'Sign Up',
-                      onPressed: _handleSignUp,
-                    ),
+                  : CustomButton(text: 'Sign Up', onPressed: _handleSignUp),
               const SizedBox(height: 20),
 
               // ─── DIVIDER "Or Sign Up With" ─────────────────
@@ -225,7 +227,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 children: [
                   _buildSocialButton(Icons.facebook, 'Facebook', () {}),
                   const SizedBox(width: 12),
-                  _buildSocialButton(Icons.g_mobiledata, 'Google', _handleGoogleSignIn),
+                  _buildSocialButton(
+                    Icons.g_mobiledata,
+                    'Google',
+                    _handleGoogleSignIn,
+                  ),
                 ],
               ),
               const SizedBox(height: 20),

@@ -1,4 +1,4 @@
-package com.example.wakeupsocial_apk
+package com.wakeupsocial.app
 
 import io.flutter.embedding.android.FlutterActivity
 

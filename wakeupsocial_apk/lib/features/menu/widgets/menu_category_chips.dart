@@ -95,29 +95,44 @@ class _ChipItemState extends State<_ChipItem> {
             color: widget.isSelected
                 ? AppColors.accent
                 : _isPressed
-                    ? AppColors.surface
-                    : Colors.white,
+                ? AppColors.surface
+                : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: widget.isSelected
                   ? AppColors.accent
                   : _isHovered
-                      ? AppColors.textSecondary
-                      : AppColors.divider,
+                  ? AppColors.textSecondary
+                  : AppColors.divider,
             ),
             boxShadow: [
               BoxShadow(
                 color: widget.isSelected
                     ? AppColors.accent.withValues(alpha: 0.2)
                     : Colors.black.withValues(
-                        alpha: _isPressed ? 0.08 : _isHovered ? 0.06 : 0.03,
+                        alpha: _isPressed
+                            ? 0.08
+                            : _isHovered
+                            ? 0.06
+                            : 0.03,
                       ),
                 blurRadius: widget.isSelected
                     ? 8
-                    : _isPressed ? 4 : _isHovered ? 10 : 4,
-                offset: Offset(0, widget.isSelected
-                    ? 3
-                    : _isPressed ? 1 : _isHovered ? 4 : 2),
+                    : _isPressed
+                    ? 4
+                    : _isHovered
+                    ? 10
+                    : 4,
+                offset: Offset(
+                  0,
+                  widget.isSelected
+                      ? 3
+                      : _isPressed
+                      ? 1
+                      : _isHovered
+                      ? 4
+                      : 2,
+                ),
               ),
             ],
           ),

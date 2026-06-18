@@ -10,18 +10,6 @@ import '../../../routes/navigation_helper.dart';
 /// ============================================================
 /// OrderTrackingScreen — Halaman tracking status pesanan.
 /// ============================================================
-///
-/// Sesuai mockup desain:
-/// - AppBar: logo "Wake Up Social" + search
-/// - Order # + estimated arrival time
-/// - Delivery Status card dengan step indicator:
-///   Unpaid → Accepted → In Progress → Ready
-/// - Info summary: Nama, No table, Total
-///
-/// **Navigasi:**
-/// - Back → kembali ke halaman sebelumnya
-///
-/// TODO: Ganti mock data dengan data real-time dari backend.
 class OrderTrackingScreen extends StatefulWidget {
   final String orderId;
 
@@ -78,7 +66,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
 
   void _applyOrder(Map<String, dynamic> order) {
     final status = OrderStatusV2.fromDb(order['status_v2'] as String?);
-    
+
     if (status == OrderStatusV2.completed && mounted) {
       _receiptTimer?.cancel();
       _receiptTimer = Timer(const Duration(milliseconds: 600), () {
@@ -100,8 +88,31 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       final response = await _orderRepo.getOrderById(widget.orderId);
       if (mounted) _applyOrder(response);
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat pesanan: $e')));
+      }
     }
+  }
+
+  String _etaSubtitle() {
+    if (_order == null) return 'Memuat estimasi waktu...';
+
+    final status = OrderStatusV2.fromDb(_order!['status_v2'] as String?);
+    final createdAt = _order!['created_at'] != null
+        ? DateTime.tryParse(_order!['created_at'] as String)
+        : null;
+    final updatedAt = _order!['updated_at'] != null
+        ? DateTime.tryParse(_order!['updated_at'] as String)
+        : null;
+
+    return orderTrackingEtaMessage(
+      status: status,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
   }
 
   @override
@@ -114,7 +125,11 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         centerTitle: false,
         leading: IconButton(
           onPressed: () => NavigationHelper.toHome(context),
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimary,
+            size: 22,
+          ),
         ),
         title: Row(
           mainAxisSize: MainAxisSize.min,
@@ -134,12 +149,19 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.search, color: AppColors.textPrimary, size: 22),
+            icon: const Icon(
+              Icons.search,
+              color: AppColors.textPrimary,
+              size: 22,
+            ),
           ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: AppColors.divider.withValues(alpha: 0.5)),
+          child: Container(
+            height: 1,
+            color: AppColors.divider.withValues(alpha: 0.5),
+          ),
         ),
       ),
       body: ShimmerLoading(
@@ -162,7 +184,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Estimated arrival in 12-15 minutes',
+                _etaSubtitle(),
                 style: TextStyle(
                   fontSize: 13,
                   color: AppColors.textSecondary,
@@ -183,9 +205,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       ),
 
       // ─── BOTTOM: DONE BUTTON ──────────────────────────────
-      bottomNavigationBar: _isLoading
-          ? null
-          : _buildDoneButton(),
+      bottomNavigationBar: _isLoading ? null : _buildDoneButton(),
     );
   }
 
@@ -262,9 +282,7 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(
-                alpha: _isHovered ? 0.08 : 0.05,
-              ),
+              color: Colors.black.withValues(alpha: _isHovered ? 0.08 : 0.05),
               blurRadius: _isHovered ? 16 : 8,
               offset: Offset(0, _isHovered ? 6 : 3),
               spreadRadius: _isHovered ? 1 : 0,
@@ -291,7 +309,10 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.accent,
                     borderRadius: BorderRadius.circular(20),
@@ -334,12 +355,18 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
 
   String _getStatusLabel() {
     switch (widget.currentStep) {
-      case -1: return 'CANCELLED/EXPIRED';
-      case 0: return 'SUBMITTED';
-      case 1: return 'CONFIRMED';
-      case 2: return 'PREPARING';
-      case 3: return 'READY';
-      default: return 'UNKNOWN';
+      case -1:
+        return 'CANCELLED/EXPIRED';
+      case 0:
+        return 'SUBMITTED';
+      case 1:
+        return 'CONFIRMED';
+      case 2:
+        return 'PREPARING';
+      case 3:
+        return 'READY';
+      default:
+        return 'UNKNOWN';
     }
   }
 
@@ -358,9 +385,7 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
           return Expanded(
             child: Container(
               height: 2,
-              color: isCompleted
-                  ? AppColors.accent
-                  : AppColors.divider,
+              color: isCompleted ? AppColors.accent : AppColors.divider,
             ),
           );
         }
@@ -406,8 +431,8 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
                   color: isCurrent
                       ? Colors.white
                       : isCompleted
-                          ? AppColors.accent
-                          : AppColors.textSecondary.withValues(alpha: 0.4),
+                      ? AppColors.accent
+                      : AppColors.textSecondary.withValues(alpha: 0.4),
                 ),
               ),
               const SizedBox(height: 6),
@@ -437,9 +462,12 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
     final data = widget.orderData;
     if (data == null) return const SizedBox();
 
-    final name = (data['notes'] as String?)?.replaceAll('Atas nama: ', '') ?? '-';
+    final name =
+        (data['notes'] as String?)?.replaceAll('Atas nama: ', '') ?? '-';
     final tableStr = data['table_number']?.toString() ?? '-';
-    final total = data['total_price'] != null ? (data['total_price'] as num).toInt() : 0;
+    final total = data['total_price'] != null
+        ? (data['total_price'] as num).toInt()
+        : 0;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -474,10 +502,7 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
         Flexible(
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
           ),
         ),
         const SizedBox(width: 8),
@@ -519,11 +544,15 @@ class _DoneButtonState extends State<_DoneButton> {
   Widget build(BuildContext context) {
     final enabled = widget.isEnabled;
     return MouseRegion(
-      onEnter: (_) { if (enabled) setState(() => _isHovered = true); },
+      onEnter: (_) {
+        if (enabled) setState(() => _isHovered = true);
+      },
       onExit: (_) => setState(() => _isHovered = false),
       cursor: enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
       child: GestureDetector(
-        onTapDown: (_) { if (enabled) setState(() => _isPressed = true); },
+        onTapDown: (_) {
+          if (enabled) setState(() => _isPressed = true);
+        },
         onTapUp: (_) {
           if (enabled) {
             setState(() => _isPressed = false);
@@ -537,18 +566,33 @@ class _DoneButtonState extends State<_DoneButton> {
           decoration: BoxDecoration(
             color: enabled
                 ? (_isPressed
-                    ? const Color(0xFF2E7D32)
-                    : const Color(0xFF388E3C))
+                      ? const Color(0xFF2E7D32)
+                      : const Color(0xFF388E3C))
                 : Colors.grey[300],
             borderRadius: BorderRadius.circular(28),
             boxShadow: enabled
                 ? [
                     BoxShadow(
                       color: const Color(0xFF388E3C).withValues(
-                        alpha: _isPressed ? 0.15 : _isHovered ? 0.3 : 0.12,
+                        alpha: _isPressed
+                            ? 0.15
+                            : _isHovered
+                            ? 0.3
+                            : 0.12,
                       ),
-                      blurRadius: _isPressed ? 4 : _isHovered ? 14 : 6,
-                      offset: Offset(0, _isPressed ? 1 : _isHovered ? 5 : 2),
+                      blurRadius: _isPressed
+                          ? 4
+                          : _isHovered
+                          ? 14
+                          : 6,
+                      offset: Offset(
+                        0,
+                        _isPressed
+                            ? 1
+                            : _isHovered
+                            ? 5
+                            : 2,
+                      ),
                     ),
                   ]
                 : [],
@@ -635,13 +679,16 @@ class _TrackingSkeleton extends StatelessWidget {
                 // Step indicator
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(4, (_) => Column(
-                    children: [
-                      SkeletonCircle(size: 30),
-                      const SizedBox(height: 6),
-                      SkeletonLine(width: 36, height: 10),
-                    ],
-                  )),
+                  children: List.generate(
+                    4,
+                    (_) => Column(
+                      children: [
+                        SkeletonCircle(size: 30),
+                        const SizedBox(height: 6),
+                        SkeletonLine(width: 36, height: 10),
+                      ],
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 28),
 
@@ -654,17 +701,24 @@ class _TrackingSkeleton extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      ...List.generate(3, (i) => Padding(
-                        padding: EdgeInsets.only(bottom: i < 2 ? 16 : 0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Flexible(child: SkeletonLine(width: 50, height: 12)),
-                            const SizedBox(width: 8),
-                            Flexible(child: SkeletonLine(width: 70, height: 12)),
-                          ],
+                      ...List.generate(
+                        3,
+                        (i) => Padding(
+                          padding: EdgeInsets.only(bottom: i < 2 ? 16 : 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: SkeletonLine(width: 50, height: 12),
+                              ),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: SkeletonLine(width: 70, height: 12),
+                              ),
+                            ],
+                          ),
                         ),
-                      )),
+                      ),
                     ],
                   ),
                 ),

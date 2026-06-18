@@ -50,20 +50,36 @@ class _PromoBannerState extends State<PromoBanner> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                AppColors.primaryDark,
-                AppColors.primary,
-              ],
+              colors: [AppColors.primaryDark, AppColors.primary],
             ),
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
                 color: AppColors.primary.withValues(
-                  alpha: _isPressed ? 0.35 : _isHovered ? 0.25 : 0.12,
+                  alpha: _isPressed
+                      ? 0.35
+                      : _isHovered
+                      ? 0.25
+                      : 0.12,
                 ),
-                blurRadius: _isPressed ? 8 : _isHovered ? 20 : 10,
-                offset: Offset(0, _isPressed ? 2 : _isHovered ? 8 : 4),
-                spreadRadius: _isPressed ? 0 : _isHovered ? 2 : 0,
+                blurRadius: _isPressed
+                    ? 8
+                    : _isHovered
+                    ? 20
+                    : 10,
+                offset: Offset(
+                  0,
+                  _isPressed
+                      ? 2
+                      : _isHovered
+                      ? 8
+                      : 4,
+                ),
+                spreadRadius: _isPressed
+                    ? 0
+                    : _isHovered
+                    ? 2
+                    : 0,
               ),
             ],
           ),

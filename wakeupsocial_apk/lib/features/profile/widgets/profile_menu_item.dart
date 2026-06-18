@@ -53,13 +53,15 @@ class _ProfileMenuItemState extends State<ProfileMenuItem> {
             color: _isPressed
                 ? AppColors.surface
                 : _isHovered
-                    ? Colors.grey.withValues(alpha: 0.04)
-                    : Colors.transparent,
+                ? Colors.grey.withValues(alpha: 0.04)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             boxShadow: _isHovered || _isPressed
                 ? [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: _isPressed ? 0.08 : 0.04),
+                      color: Colors.black.withValues(
+                        alpha: _isPressed ? 0.08 : 0.04,
+                      ),
                       blurRadius: _isPressed ? 4 : 8,
                       offset: Offset(0, _isPressed ? 1 : 2),
                     ),

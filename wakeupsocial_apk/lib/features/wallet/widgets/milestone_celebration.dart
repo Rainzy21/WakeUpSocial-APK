@@ -22,7 +22,11 @@ Future<void> showMilestoneCelebration(
             const SizedBox(height: 8),
             Text(
               couponCode,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, letterSpacing: 2),
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
             ),
           ],
         ),

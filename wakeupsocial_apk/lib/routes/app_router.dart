@@ -37,7 +37,7 @@ import '../features/help/screens/help_center_screen.dart';
 import '../features/help/screens/contact_us_screen.dart';
 import '../features/qr/screens/qr_scan_screen.dart';
 import '../features/wallet/screens/wallet_screen.dart';
-import '../features/cashier/screens/cashier_screen.dart';
+import '../features/cashier/screens/cashier_guard_screen.dart';
 
 /// Generates routes for the app based on [RouteSettings].
 class AppRouter {
@@ -85,12 +85,10 @@ class AppRouter {
       case AppRoutes.wallet:
         return _buildRoute(const WalletScreen());
       case AppRoutes.cashier:
-        return _buildRoute(const CashierScreen());
+        return _buildRoute(const CashierGuardScreen());
       default:
         return _buildRoute(
-          const Scaffold(
-            body: Center(child: Text('Page not found')),
-          ),
+          const Scaffold(body: Center(child: Text('Page not found'))),
         );
     }
   }

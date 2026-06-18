@@ -41,21 +41,33 @@ class _CashierScreenState extends State<CashierScreen> {
   Future<void> _load() async {
     try {
       final orders = await _orderRepo.getCashierQueue();
-      if (mounted) setState(() { _orders = orders; _loading = false; });
-    } catch (_) {
-      if (mounted) setState(() => _loading = false);
+      if (mounted)
+        setState(() {
+          _orders = orders;
+          _loading = false;
+        });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat antrian kasir: $e')),
+        );
+      }
     }
   }
 
-  Future<void> _action(String orderId, Future<Map<String, dynamic>> Function() fn) async {
+  Future<void> _action(
+    String orderId,
+    Future<Map<String, dynamic>> Function() fn,
+  ) async {
     try {
       await fn();
       await _load();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$e')));
       }
     }
   }
@@ -84,8 +96,11 @@ class _CashierScreenState extends State<CashierScreen> {
                       itemCount: _orders.length,
                       itemBuilder: (context, index) {
                         final order = _orders[index];
-                        final status = OrderStatusV2.fromDb(order['status_v2'] as String?);
-                        final total = (order['total_amount'] as num?)?.toInt() ?? 0;
+                        final status = OrderStatusV2.fromDb(
+                          order['status_v2'] as String?,
+                        );
+                        final total =
+                            (order['total_amount'] as num?)?.toInt() ?? 0;
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
                           child: Padding(
@@ -95,7 +110,9 @@ class _CashierScreenState extends State<CashierScreen> {
                               children: [
                                 Text(
                                   '#${(order['id'] as String).substring(0, 8)}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 Text(status.displayName),
                                 Text('Total: Rp ${_formatIdr(total)}'),
@@ -108,7 +125,9 @@ class _CashierScreenState extends State<CashierScreen> {
                                       OutlinedButton(
                                         onPressed: () => _action(
                                           order['id'] as String,
-                                          () => _orderRepo.reviewOrder(order['id'] as String),
+                                          () => _orderRepo.reviewOrder(
+                                            order['id'] as String,
+                                          ),
                                         ),
                                         child: const Text('Review'),
                                       ),
@@ -117,7 +136,9 @@ class _CashierScreenState extends State<CashierScreen> {
                                       ElevatedButton(
                                         onPressed: () => _action(
                                           order['id'] as String,
-                                          () => _orderRepo.confirmOrder(order['id'] as String),
+                                          () => _orderRepo.confirmOrder(
+                                            order['id'] as String,
+                                          ),
                                         ),
                                         child: const Text('Confirm'),
                                       ),
@@ -125,7 +146,9 @@ class _CashierScreenState extends State<CashierScreen> {
                                       ElevatedButton(
                                         onPressed: () => _action(
                                           order['id'] as String,
-                                          () => _orderRepo.markOrderReady(order['id'] as String),
+                                          () => _orderRepo.markOrderReady(
+                                            order['id'] as String,
+                                          ),
                                         ),
                                         child: const Text('Ready'),
                                       ),
@@ -133,7 +156,9 @@ class _CashierScreenState extends State<CashierScreen> {
                                       ElevatedButton(
                                         onPressed: () => _action(
                                           order['id'] as String,
-                                          () => _orderRepo.completeOrder(order['id'] as String),
+                                          () => _orderRepo.completeOrder(
+                                            order['id'] as String,
+                                          ),
                                         ),
                                         child: const Text('Complete'),
                                       ),

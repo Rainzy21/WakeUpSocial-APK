@@ -70,10 +70,8 @@ class FeatureCardsSection extends StatelessWidget {
             height: 100,
             width: double.infinity,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(
-              height: 100,
-              label: 'Failed to load',
-            ),
+            errorBuilder: (context, error, stackTrace) =>
+                _buildImagePlaceholder(height: 100, label: 'Failed to load'),
           ),
         ),
       ],
@@ -128,11 +126,12 @@ class FeatureCardsSection extends StatelessWidget {
             width: 80,
             height: 120,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(
-              width: 80,
-              height: 120,
-              label: 'Failed to load',
-            ),
+            errorBuilder: (context, error, stackTrace) =>
+                _buildImagePlaceholder(
+                  width: 80,
+                  height: 120,
+                  label: 'Failed to load',
+                ),
           ),
         ),
       ],

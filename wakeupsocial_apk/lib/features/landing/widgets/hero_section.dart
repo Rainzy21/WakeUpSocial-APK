@@ -28,14 +28,10 @@ import '../../../core/constants/app_colors.dart';
 class HeroSection extends StatelessWidget {
   final VoidCallback onExploreMenu;
 
-  const HeroSection({
-    super.key,
-    required this.onExploreMenu,
-  });
+  const HeroSection({super.key, required this.onExploreMenu});
 
   /// ─── BACKGROUND ONLY ──────────────────────────────────────
   /// Mengembalikan hanya gambar background (untuk parallax).
-  /// TODO: Ganti Container placeholder dengan Image.asset(...)
   static Widget backgroundOnly() {
     return Image.network(
       'https://images.unsplash.com/photo-1495474472205-51f33f67950f?auto=format&fit=crop&w=800&q=80',
@@ -103,10 +99,7 @@ class HeroSection extends StatelessWidget {
                 ),
                 child: const Text(
                   'Explore the menu',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ),
             ],

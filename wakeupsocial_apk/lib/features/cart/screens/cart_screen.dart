@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/widgets/page_skeletons.dart';
 import '../../../routes/navigation_helper.dart';
-import '../../../core/services/cart_service.dart';
-import '../../../data/models/cart_item_model.dart';
+import '../../../core/providers/cart_provider.dart';
 
 /// ============================================================
 /// CartScreen — Halaman keranjang belanja.
@@ -20,8 +20,6 @@ import '../../../data/models/cart_item_model.dart';
 /// - Tombol ± quantity dengan AnimatedSwitcher pada angka
 /// - Swipe-to-delete (Dismissible) dengan background merah
 /// - Empty state saat keranjang kosong
-///
-/// TODO: Integrasi dengan state management (Provider/Riverpod).
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
@@ -60,7 +58,11 @@ class _CartScreenState extends State<CartScreen> {
         centerTitle: false,
         leading: IconButton(
           onPressed: () => NavigationHelper.back(context),
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimary,
+            size: 22,
+          ),
         ),
         title: const Text(
           'CART',
@@ -74,34 +76,41 @@ class _CartScreenState extends State<CartScreen> {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.search, color: AppColors.textPrimary, size: 22),
+            icon: const Icon(
+              Icons.search,
+              color: AppColors.textPrimary,
+              size: 22,
+            ),
           ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: AppColors.divider.withValues(alpha: 0.5)),
+          child: Container(
+            height: 1,
+            color: AppColors.divider.withValues(alpha: 0.5),
+          ),
         ),
       ),
       body: ShimmerLoading(
         isLoading: _isLoading,
         skeleton: const _CartSkeleton(),
-        child: ListenableBuilder(
-          listenable: CartService.instance,
-          builder: (context, _) {
-            final cartItems = CartService.instance.items;
-            return cartItems.isEmpty ? _buildEmptyState() : _buildCartList(cartItems);
+        child: Consumer<CartProvider>(
+          builder: (context, cart, _) {
+            final cartItems = cart.items;
+            return cartItems.isEmpty
+                ? _buildEmptyState()
+                : _buildCartList(cart, cartItems);
           },
         ),
       ),
 
       // ─── BOTTOM BAR: Total + Checkout ─────────────────────
-      bottomNavigationBar: _isLoading 
-          ? null 
-          : ListenableBuilder(
-              listenable: CartService.instance,
-              builder: (context, _) {
-                if (CartService.instance.items.isEmpty) return const SizedBox.shrink();
-                return _buildBottomBar();
+      bottomNavigationBar: _isLoading
+          ? null
+          : Consumer<CartProvider>(
+              builder: (context, cart, _) {
+                if (cart.items.isEmpty) return const SizedBox.shrink();
+                return _buildBottomBar(cart);
               },
             ),
     );
@@ -123,7 +132,11 @@ class _CartScreenState extends State<CartScreen> {
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Icon(Icons.shopping_bag_outlined, size: 36, color: Colors.grey[400]),
+            child: Icon(
+              Icons.shopping_bag_outlined,
+              size: 36,
+              color: Colors.grey[400],
+            ),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -144,7 +157,7 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCartList(List<CartItemModel> cartItems) {
+  Widget _buildCartList(CartProvider cart, List<CartItem> cartItems) {
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -152,9 +165,9 @@ class _CartScreenState extends State<CartScreen> {
       itemBuilder: (context, index) {
         final item = cartItems[index];
         return Dismissible(
-          key: ValueKey('${item.menuItem.id}_$index'),
+          key: ValueKey('${item.menuItemId}_$index'),
           direction: DismissDirection.endToStart,
-          onDismissed: (_) => CartService.instance.removeItem(index),
+          onDismissed: (_) => cart.removeItem(index),
           background: Container(
             alignment: Alignment.centerRight,
             margin: const EdgeInsets.only(bottom: 12),
@@ -166,20 +179,20 @@ class _CartScreenState extends State<CartScreen> {
             child: Icon(Icons.delete_outline, color: AppColors.error, size: 24),
           ),
           child: _CartItemCard(
-            name: item.menuItem.name,
-            price: _formatPrice(item.menuItem.price.toInt()),
+            name: item.name,
+            price: _formatPrice(item.price),
             qty: item.quantity,
-            imageUrl: item.menuItem.imageUrl,
-            onIncrement: () => CartService.instance.incrementQty(index),
-            onDecrement: () => CartService.instance.decrementQty(index),
-            onDelete: () => CartService.instance.removeItem(index),
+            imageUrl: item.imageUrl,
+            onIncrement: () => cart.incrementQty(index),
+            onDecrement: () => cart.decrementQty(index),
+            onDelete: () => cart.removeItem(index),
           ),
         );
       },
     );
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomBar(CartProvider cart) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -210,7 +223,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _formatPrice(CartService.instance.totalPrice),
+                    _formatPrice(cart.totalPrice),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -281,9 +294,7 @@ class _CartItemCardState extends State<_CartItemCard> {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(
-                alpha: _isHovered ? 0.08 : 0.04,
-              ),
+              color: Colors.black.withValues(alpha: _isHovered ? 0.08 : 0.04),
               blurRadius: _isHovered ? 16 : 8,
               offset: Offset(0, _isHovered ? 6 : 3),
               spreadRadius: _isHovered ? 1 : 0,
@@ -301,8 +312,8 @@ class _CartItemCardState extends State<_CartItemCard> {
                 color: AppColors.surface,
                 child: widget.imageUrl != null && widget.imageUrl!.isNotEmpty
                     ? (widget.imageUrl!.startsWith('http')
-                        ? Image.network(widget.imageUrl!, fit: BoxFit.cover)
-                        : Image.asset(widget.imageUrl!, fit: BoxFit.cover))
+                          ? Image.network(widget.imageUrl!, fit: BoxFit.cover)
+                          : Image.asset(widget.imageUrl!, fit: BoxFit.cover))
                     : Icon(Icons.coffee, color: Colors.grey[500], size: 28),
               ),
             ),
@@ -348,7 +359,11 @@ class _CartItemCardState extends State<_CartItemCard> {
                   color: AppColors.error.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.delete_outline, color: AppColors.error, size: 18),
+                child: Icon(
+                  Icons.delete_outline,
+                  color: AppColors.error,
+                  size: 18,
+                ),
               ),
             ),
           ],
@@ -373,7 +388,14 @@ class _CartItemCardState extends State<_CartItemCard> {
               width: 32,
               height: 30,
               child: Center(
-                child: Text('−', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                child: Text(
+                  '−',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
           ),
@@ -405,7 +427,14 @@ class _CartItemCardState extends State<_CartItemCard> {
               width: 32,
               height: 30,
               child: Center(
-                child: Text('+', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                child: Text(
+                  '+',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
           ),
@@ -455,10 +484,25 @@ class _HoverButtonState extends State<_HoverButton> {
             boxShadow: [
               BoxShadow(
                 color: AppColors.accent.withValues(
-                  alpha: _isPressed ? 0.15 : _isHovered ? 0.25 : 0.1,
+                  alpha: _isPressed
+                      ? 0.15
+                      : _isHovered
+                      ? 0.25
+                      : 0.1,
                 ),
-                blurRadius: _isPressed ? 4 : _isHovered ? 14 : 6,
-                offset: Offset(0, _isPressed ? 1 : _isHovered ? 5 : 2),
+                blurRadius: _isPressed
+                    ? 4
+                    : _isHovered
+                    ? 14
+                    : 6,
+                offset: Offset(
+                  0,
+                  _isPressed
+                      ? 1
+                      : _isHovered
+                      ? 5
+                      : 2,
+                ),
               ),
             ],
           ),

@@ -26,10 +26,10 @@ class _QrScanScreenState extends State<QrScanScreen> {
 
       if (!mounted) return;
       await context.read<SessionProvider>().setSession(
-            sessionId: session['id'] as String,
-            tableId: table['id'] as String,
-            tableNumber: table['table_number'] as int,
-          );
+        sessionId: session['id'] as String,
+        tableId: table['id'] as String,
+        tableNumber: table['table_number'] as int,
+      );
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -38,9 +38,9 @@ class _QrScanScreenState extends State<QrScanScreen> {
       NavigationHelper.toHome(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('QR tidak valid: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('QR tidak valid: $e')));
         setState(() => _processing = false);
       }
     }

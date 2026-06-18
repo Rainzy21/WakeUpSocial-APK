@@ -67,10 +67,25 @@ class _MenuItemCardState extends State<MenuItemCard> {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(
-                  alpha: _isPressed ? 0.10 : _isHovered ? 0.08 : 0.04,
+                  alpha: _isPressed
+                      ? 0.10
+                      : _isHovered
+                      ? 0.08
+                      : 0.04,
                 ),
-                blurRadius: _isPressed ? 6 : _isHovered ? 14 : 8,
-                offset: Offset(0, _isPressed ? 1 : _isHovered ? 5 : 2),
+                blurRadius: _isPressed
+                    ? 6
+                    : _isHovered
+                    ? 14
+                    : 8,
+                offset: Offset(
+                  0,
+                  _isPressed
+                      ? 1
+                      : _isHovered
+                      ? 5
+                      : 2,
+                ),
               ),
             ],
           ),
@@ -196,7 +211,7 @@ class _MenuItemCardState extends State<MenuItemCard> {
                 strokeWidth: 2,
                 value: loadingProgress.expectedTotalBytes != null
                     ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
+                          loadingProgress.expectedTotalBytes!
                     : null,
                 color: AppColors.primary,
               ),

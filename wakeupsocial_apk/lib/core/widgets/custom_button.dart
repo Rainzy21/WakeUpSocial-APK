@@ -28,7 +28,9 @@ class CustomButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.accent, // Using your accent color (0xFF5f5f5f)
+          backgroundColor:
+              backgroundColor ??
+              AppColors.accent, // Using your accent color (0xFF5f5f5f)
           foregroundColor: textColor ?? Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -47,10 +49,7 @@ class CustomButton extends StatelessWidget {
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (icon != null) ...[
-                    icon!,
-                    const SizedBox(width: 8),
-                  ],
+                  if (icon != null) ...[icon!, const SizedBox(width: 8)],
                   Text(
                     text,
                     style: const TextStyle(

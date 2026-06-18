@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../services/local_storage_service.dart';
+import '../../data/models/menu_item_model.dart';
 
 class CartItem {
   final String menuItemId;
@@ -17,28 +18,28 @@ class CartItem {
   });
 
   CartItem copyWith({int? quantity}) => CartItem(
-        menuItemId: menuItemId,
-        name: name,
-        price: price,
-        imageUrl: imageUrl,
-        quantity: quantity ?? this.quantity,
-      );
+    menuItemId: menuItemId,
+    name: name,
+    price: price,
+    imageUrl: imageUrl,
+    quantity: quantity ?? this.quantity,
+  );
 
   Map<String, dynamic> toJson() => {
-        'menu_item_id': menuItemId,
-        'name': name,
-        'price': price,
-        'image_url': imageUrl,
-        'quantity': quantity,
-      };
+    'menu_item_id': menuItemId,
+    'name': name,
+    'price': price,
+    'image_url': imageUrl,
+    'quantity': quantity,
+  };
 
   factory CartItem.fromJson(Map<String, dynamic> json) => CartItem(
-        menuItemId: json['menu_item_id'] as String? ?? json['id'] as String? ?? '',
-        name: json['name'] as String,
-        price: (json['price'] as num).toInt(),
-        imageUrl: json['image_url'] as String? ?? '',
-        quantity: json['quantity'] as int? ?? 1,
-      );
+    menuItemId: json['menu_item_id'] as String? ?? json['id'] as String? ?? '',
+    name: json['name'] as String,
+    price: (json['price'] as num).toInt(),
+    imageUrl: json['image_url'] as String? ?? '',
+    quantity: json['quantity'] as int? ?? 1,
+  );
 
   int get subtotal => price * quantity;
 }
@@ -55,6 +56,8 @@ class CartProvider extends ChangeNotifier {
 
   int get totalPrice => _items.fold(0, (sum, item) => sum + item.subtotal);
 
+  int get totalItemCount => _items.fold(0, (sum, item) => sum + item.quantity);
+
   Future<void> _restore() async {
     final saved = await _storage.loadCart();
     _items
@@ -67,6 +70,15 @@ class CartProvider extends ChangeNotifier {
     await _storage.saveCart(_items.map((e) => e.toJson()).toList());
   }
 
+  Future<void> addMenuItem(MenuItemModel item) async {
+    await addItem(
+      menuItemId: item.id,
+      name: item.name,
+      price: item.priceInt,
+      imageUrl: item.imageUrl ?? '',
+    );
+  }
+
   Future<void> addItem({
     required String menuItemId,
     required String name,
@@ -77,26 +89,32 @@ class CartProvider extends ChangeNotifier {
     if (idx >= 0) {
       _items[idx] = _items[idx].copyWith(quantity: _items[idx].quantity + 1);
     } else {
-      _items.add(CartItem(
-        menuItemId: menuItemId,
-        name: name,
-        price: price,
-        imageUrl: imageUrl,
-      ));
+      _items.add(
+        CartItem(
+          menuItemId: menuItemId,
+          name: name,
+          price: price,
+          imageUrl: imageUrl,
+        ),
+      );
     }
     await _persist();
     notifyListeners();
   }
 
   Future<void> incrementQty(int index) async {
-    _items[index] = _items[index].copyWith(quantity: _items[index].quantity + 1);
+    _items[index] = _items[index].copyWith(
+      quantity: _items[index].quantity + 1,
+    );
     await _persist();
     notifyListeners();
   }
 
   Future<void> decrementQty(int index) async {
     if (_items[index].quantity > 1) {
-      _items[index] = _items[index].copyWith(quantity: _items[index].quantity - 1);
+      _items[index] = _items[index].copyWith(
+        quantity: _items[index].quantity - 1,
+      );
       await _persist();
       notifyListeners();
     }
