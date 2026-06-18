@@ -598,7 +598,7 @@ class _DoneButtonState extends State<_DoneButton> {
                 : [],
           ),
           transform: _isPressed
-              ? (Matrix4.identity()..scale(0.97))
+              ? (Matrix4.identity()..scaleByDouble(0.97, 0.97, 0.97, 1.0))
               : Matrix4.identity(),
           transformAlignment: Alignment.center,
           alignment: Alignment.center,

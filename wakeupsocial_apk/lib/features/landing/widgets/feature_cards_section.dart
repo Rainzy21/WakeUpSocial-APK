@@ -173,10 +173,8 @@ class FeatureCardsSection extends StatelessWidget {
 /// Card wrapper dengan drop shadow default + hover lift + press sink.
 class _HoverCard extends StatefulWidget {
   final Widget child;
-  final VoidCallback? onTap;
 
-  // DI SINI PERUBAHANNYA: Inisialisasi parameter 'this.onTap' ke dalam constructor
-  const _HoverCard({required this.child, this.onTap});
+  const _HoverCard({required this.child});
 
   @override
   State<_HoverCard> createState() => _HoverCardState();
@@ -193,10 +191,7 @@ class _HoverCardState extends State<_HoverCard> {
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
         onTapDown: (_) => setState(() => _isPressed = true),
-        onTapUp: (_) {
-          setState(() => _isPressed = false);
-          widget.onTap?.call();
-        },
+        onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
@@ -236,7 +231,7 @@ class _HoverCardState extends State<_HoverCard> {
             ],
           ),
           transform: _isPressed
-              ? (Matrix4.identity()..scale(0.97))
+              ? (Matrix4.identity()..scaleByDouble(0.97, 0.97, 0.97, 1.0))
               : Matrix4.identity(),
           transformAlignment: Alignment.center,
           child: widget.child,

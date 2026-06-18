@@ -173,7 +173,7 @@ class _ProductCardState extends State<_ProductCard> {
             ],
           ),
           transform: _isPressed
-              ? (Matrix4.identity()..scale(0.96))
+              ? (Matrix4.identity()..scaleByDouble(0.96, 0.96, 0.96, 1.0))
               : Matrix4.identity(),
           transformAlignment: Alignment.center,
           child: Column(
@@ -191,7 +191,7 @@ class _ProductCardState extends State<_ProductCard> {
                       ? Image.network(
                           widget.imageUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Icon(
+                          errorBuilder: (context, error, stackTrace) => Icon(
                             Icons.local_cafe,
                             color: Colors.grey[400],
                             size: 32,

@@ -197,6 +197,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 onTap: () async {
                   if (_profile == null) return;
                   setState(() => _isLoading = true);
+                  final messenger = ScaffoldMessenger.of(context);
                   try {
                     final firstName = _firstNameController.text.trim();
                     final lastName = _lastNameController.text.trim();
@@ -211,21 +212,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       email: email,
                     );
 
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Profile updated successfully'),
-                        ),
-                      );
-                      NavigationHelper.back(context);
-                    }
+                    if (!context.mounted) return;
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Profile updated successfully'),
+                      ),
+                    );
+                    NavigationHelper.back(context);
                   } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to update profile: $e')),
-                      );
-                      setState(() => _isLoading = false);
-                    }
+                    if (!context.mounted) return;
+                    messenger.showSnackBar(
+                      SnackBar(content: Text('Failed to update profile: $e')),
+                    );
+                    setState(() => _isLoading = false);
                   }
                 },
               ),

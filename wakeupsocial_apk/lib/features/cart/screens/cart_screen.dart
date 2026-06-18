@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/shimmer_loading.dart';
-import '../../../core/widgets/page_skeletons.dart';
 import '../../../routes/navigation_helper.dart';
 import '../../../core/providers/cart_provider.dart';
 
@@ -507,7 +506,7 @@ class _HoverButtonState extends State<_HoverButton> {
             ],
           ),
           transform: _isPressed
-              ? (Matrix4.identity()..scale(0.97))
+              ? (Matrix4.identity()..scaleByDouble(0.97, 0.97, 0.97, 1.0))
               : Matrix4.identity(),
           transformAlignment: Alignment.center,
           alignment: Alignment.center,
@@ -538,7 +537,7 @@ class _CartSkeleton extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: 3,
-      itemBuilder: (_, __) => Padding(
+      itemBuilder: (context, index) => Padding(
         padding: const EdgeInsets.only(bottom: 12),
         child: Container(
           padding: const EdgeInsets.all(12),

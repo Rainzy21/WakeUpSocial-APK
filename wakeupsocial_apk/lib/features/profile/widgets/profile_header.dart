@@ -84,7 +84,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             ],
           ),
           transform: _isPressed
-              ? (Matrix4.identity()..scale(0.98))
+              ? (Matrix4.identity()..scaleByDouble(0.98, 0.98, 0.98, 1.0))
               : Matrix4.identity(),
           transformAlignment: Alignment.center,
           child: Row(

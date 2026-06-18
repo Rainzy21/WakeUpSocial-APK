@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routes/navigation_helper.dart';
 import '../widgets/menu_category_chips.dart';
-import '../widgets/menu_promo_carousel.dart';
 import '../widgets/menu_item_card.dart';
 import '../../../core/providers/cart_provider.dart';
 import '../../../data/models/menu_item_model.dart';
@@ -32,14 +31,10 @@ class _MenuScreenState extends State<MenuScreen> {
   String _searchQuery = '';
 
   final ScrollController _scrollController = ScrollController();
-  double _scrollOffset = 0;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {
-      setState(() => _scrollOffset = _scrollController.offset);
-    });
     _fetchData();
   }
 

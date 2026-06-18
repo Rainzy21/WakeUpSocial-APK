@@ -92,7 +92,7 @@ class _MenuPromoCarouselState extends State<MenuPromoCarousel> {
               child: Image.asset(
                 slide['image']!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+                errorBuilder: (context, error, stackTrace) => Container(
                   color: Colors.grey[400],
                   child: Center(
                     child: Icon(
@@ -113,8 +113,8 @@ class _MenuPromoCarouselState extends State<MenuPromoCarousel> {
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                     colors: [
-                      Colors.black.withOpacity(0.6),
-                      Colors.black.withOpacity(0.1),
+                      Colors.black.withValues(alpha: 0.6),
+                      Colors.black.withValues(alpha: 0.1),
                     ],
                   ),
                 ),

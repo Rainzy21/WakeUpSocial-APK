@@ -228,6 +228,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () async {
+                            final messenger = ScaffoldMessenger.of(context);
                             final Uri emailLaunchUri = Uri(
                               scheme: 'mailto',
                               path: 'support@wakeupsocial.com',
@@ -235,15 +236,13 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                   'subject=Bantuan%20Aplikasi%20Wake%20Up%20Social',
                             );
                             if (!await launchUrl(emailLaunchUri)) {
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Tidak dapat membuka aplikasi email',
-                                    ),
+                              messenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Tidak dapat membuka aplikasi email',
                                   ),
-                                );
-                              }
+                                ),
+                              );
                             }
                           },
                           style: OutlinedButton.styleFrom(
@@ -268,20 +267,19 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () async {
+                            final messenger = ScaffoldMessenger.of(context);
                             const whatsappNumber = String.fromEnvironment(
                               'SUPPORT_WHATSAPP_NUMBER',
                             );
                             if (whatsappNumber.isEmpty) {
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Nomor WhatsApp belum dikonfigurasi. '
-                                      'Set SUPPORT_WHATSAPP_NUMBER di .env',
-                                    ),
+                              messenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Nomor WhatsApp belum dikonfigurasi. '
+                                    'Set SUPPORT_WHATSAPP_NUMBER di .env',
                                   ),
-                                );
-                              }
+                                ),
+                              );
                               return;
                             }
                             final Uri waLaunchUri = Uri.parse(
@@ -291,15 +289,11 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                               waLaunchUri,
                               mode: LaunchMode.externalApplication,
                             )) {
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Tidak dapat membuka WhatsApp',
-                                    ),
-                                  ),
-                                );
-                              }
+                              messenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text('Tidak dapat membuka WhatsApp'),
+                                ),
+                              );
                             }
                           },
                           style: ElevatedButton.styleFrom(

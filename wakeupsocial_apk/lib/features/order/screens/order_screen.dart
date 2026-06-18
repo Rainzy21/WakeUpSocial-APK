@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/observability/app_logger.dart';
 import '../../../core/widgets/shimmer_loading.dart';
-import '../../../core/widgets/page_skeletons.dart';
 import '../../../routes/navigation_helper.dart';
 import '../../../core/providers/cart_provider.dart';
 import '../../../core/providers/session_provider.dart';
@@ -124,8 +123,13 @@ class _OrderScreenState extends State<OrderScreen> {
           )
           .toList();
 
+      final sessionId = currentSessionId;
+      if (sessionId == null) {
+        throw StateError('Session ID required to create order');
+      }
+
       final orderMap = await OrderRepository().createOrder(
-        sessionId: currentSessionId!,
+        sessionId: sessionId,
         items: orderItemsInput,
         notes:
             _nameController.text.trim() +
@@ -344,7 +348,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                   ),
                   Text(
-                    _formatPrice(item.price * item.quantity),
+                    _formatPrice(item.subtotal.toDouble()),
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -477,7 +481,7 @@ class _HoverButtonState extends State<_HoverButton> {
             ],
           ),
           transform: _isPressed
-              ? (Matrix4.identity()..scale(0.97))
+              ? (Matrix4.identity()..scaleByDouble(0.97, 0.97, 0.97, 1.0))
               : Matrix4.identity(),
           transformAlignment: Alignment.center,
           alignment: Alignment.center,

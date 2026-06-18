@@ -41,11 +41,12 @@ class _CashierScreenState extends State<CashierScreen> {
   Future<void> _load() async {
     try {
       final orders = await _orderRepo.getCashierQueue();
-      if (mounted)
+      if (mounted) {
         setState(() {
           _orders = orders;
           _loading = false;
         });
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);

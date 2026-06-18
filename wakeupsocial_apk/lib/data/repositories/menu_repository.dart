@@ -29,7 +29,7 @@ class MenuRepository {
   Future<List<MenuItemModel>> getMenuItems({String? categoryId}) {
     return ResilientCall.run(
       operation: 'menu.get_items',
-      tags: {if (categoryId != null) 'category_id': categoryId},
+      tags: {'category_id': ?categoryId},
       action: () async {
         var query = _supabase
             .from('menu_items')
