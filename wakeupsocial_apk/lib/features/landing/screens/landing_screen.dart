@@ -6,6 +6,8 @@ import '../widgets/hero_section.dart';
 import '../widgets/feature_cards_section.dart';
 import '../widgets/best_seller_section.dart';
 import '../widgets/promo_banner.dart';
+import 'package:provider/provider.dart';
+import '../../../core/providers/cart_provider.dart';
 
 /// ============================================================
 /// LandingScreen — Halaman utama / beranda (Tab 0: Home).
@@ -54,10 +56,10 @@ class LandingScreen extends StatelessWidget {
         ParallaxSection(
           imageHeight: 320,
           parallaxFactor: 0.5,
-          child: HeroSection.backgroundOnly(),
           overlay: HeroSection.overlayOnly(
             onExploreMenu: () => NavigationHelper.toMenu(context),
           ),
+          child: HeroSection.backgroundOnly(),
         ),
 
         const SizedBox(height: 20),
@@ -73,7 +75,21 @@ class LandingScreen extends StatelessWidget {
         // ─── BEST SELLER ─────────────────────────────────────
         BestSellerSection(
           onSeeAll: () => NavigationHelper.toMenu(context),
-          onAddToCart: (_) => NavigationHelper.toCart(context),
+          onAddToCart: (name, price) {
+            final cart = Provider.of<CartProvider>(context, listen: false);
+            cart.addItem(
+              menuItemId: name,
+              name: name,
+              price: price,
+              imageUrl: '',
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('$name ditambahkan ke keranjang'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
         ),
 
         const SizedBox(height: 20),

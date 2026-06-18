@@ -27,6 +27,7 @@ class MenuItemModel {
   });
 
   factory MenuItemModel.fromJson(Map<String, dynamic> json) {
+    final priceValue = json['price_int'] ?? json['price'];
     return MenuItemModel(
       id: json['id'] as String,
       categoryId: json['category_id'] as String?,
@@ -36,7 +37,7 @@ class MenuItemModel {
           : null,
       name: json['name'] as String,
       description: json['description'] as String?,
-      price: (json['price'] as num).toDouble(),
+      price: (priceValue as num).toDouble(),
       imageUrl: json['image_url'] as String?,
       isAvailable: (json['is_available'] as bool?) ?? true,
       createdAt: json['created_at'] != null
@@ -47,6 +48,11 @@ class MenuItemModel {
           : null,
     );
   }
+
+  int get priceInt => price.round();
+
+  String get categoryName =>
+      category?.name ?? 'Lainnya';
 
   Map<String, dynamic> toJson() {
     return {

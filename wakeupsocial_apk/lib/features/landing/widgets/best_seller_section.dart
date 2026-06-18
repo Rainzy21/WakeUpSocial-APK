@@ -20,7 +20,7 @@ class BestSellerSection extends StatelessWidget {
   final VoidCallback? onSeeAll;
 
   /// Callback ketika tombol "+" pada produk ditekan.
-  final ValueChanged<String>? onAddToCart;
+  final void Function(String name, int price)? onAddToCart;
 
   const BestSellerSection({
     super.key,
@@ -77,9 +77,9 @@ class BestSellerSection extends StatelessWidget {
                   right: index < _mockProducts.length - 1 ? 12 : 0,
                 ),
                 child: _ProductCard(
-                  name: p['name']!,
-                  price: p['price']!,
-                  onAddToCart: () => onAddToCart?.call(p['name']!),
+                  name: p['name'] as String,
+                  price: p['priceStr'] as String,
+                  onAddToCart: () => onAddToCart?.call(p['name'] as String, p['price'] as int),
                 ),
               );
             },
@@ -92,11 +92,11 @@ class BestSellerSection extends StatelessWidget {
 
 /// Mock data produk best seller.
 /// TODO: Ganti dengan data dari repository/API.
-final List<Map<String, String>> _mockProducts = [
-  {'name': 'Flat White', 'price': 'Rp 25.000'},
-  {'name': 'Nitro Cold Brew', 'price': 'Rp 23.000'},
-  {'name': 'Long Black', 'price': 'Rp 23.000'},
-  {'name': 'Iced Mocha', 'price': 'Rp 28.000'},
+final List<Map<String, dynamic>> _mockProducts = [
+  {'name': 'Flat White', 'priceStr': 'Rp 25.000', 'price': 25000},
+  {'name': 'Nitro Cold Brew', 'priceStr': 'Rp 23.000', 'price': 23000},
+  {'name': 'Long Black', 'priceStr': 'Rp 23.000', 'price': 23000},
+  {'name': 'Iced Mocha', 'priceStr': 'Rp 28.000', 'price': 28000},
 ];
 
 /// ─── PRODUCT CARD ───────────────────────────────────────────

@@ -25,7 +25,7 @@ class AuthRepository {
       password: password,
       data: {
         'name': name,
-        if (phone != null) 'phone': phone,
+        'phone': ?phone,
       },
     );
   }
@@ -51,6 +51,11 @@ class AuthRepository {
       // URL Scheme redirect must match AndroidManifest.xml intent-filter
       redirectTo: 'io.supabase.wakeupsocial://login-callback/',
     );
+  }
+
+  /// Updates FCM token on profile.
+  Future<void> updateFcmToken(String token) async {
+    await _supabase.rpc('update_fcm_token', params: {'p_token': token});
   }
 
   /// Signs out the current user.

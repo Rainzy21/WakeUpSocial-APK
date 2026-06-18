@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_routes.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// ============================================================
 /// NavigationHelper — Helper terpusat untuk navigasi antar halaman.
@@ -23,7 +24,7 @@ class NavigationHelper {
   
   /// Navigasi ke halaman Login (hapus semua history).
   static void toLogin(BuildContext context) =>
-      Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (_) => false);
+      Navigator.pushNamed(context, AppRoutes.login);
 
   /// Navigasi ke halaman Sign Up.
   static void toSignUp(BuildContext context) =>
@@ -93,6 +94,22 @@ class NavigationHelper {
   /// Navigasi ke halaman Contact Us.
   static void toContactUs(BuildContext context) =>
       Navigator.pushNamed(context, AppRoutes.contactUs);
+
+  static void toQrScan(BuildContext context) =>
+      Navigator.pushNamed(context, AppRoutes.qrScan);
+
+  static void toWallet(BuildContext context) =>
+      Navigator.pushNamed(context, AppRoutes.wallet);
+
+  static void toCashier(BuildContext context) =>
+      Navigator.pushNamed(context, AppRoutes.cashier);
+
+  /// Prompt login then run [action] if authenticated.
+  static Future<bool> requireAuth(BuildContext context) async {
+    if (Supabase.instance.client.auth.currentUser != null) return true;
+    await Navigator.pushNamed(context, AppRoutes.login);
+    return Supabase.instance.client.auth.currentUser != null;
+  }
 
   // ─── GENERAL ─────────────────────────────────────────────────
 

@@ -7,6 +7,8 @@ import '../../../core/services/cart_service.dart';
 import '../../../data/models/order_model.dart';
 import '../../../data/repositories/order_repository.dart';
 import '../../../data/repositories/auth_repository.dart';
+import 'package:provider/provider.dart';
+import '../../../core/providers/session_provider.dart';
 
 /// ============================================================
 /// OrderScreen — Halaman checkout / konfirmasi pesanan.
@@ -80,18 +82,27 @@ class _OrderScreenState extends State<OrderScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final order = await OrderRepository().createOrder(
-        cartItems: cartItems,
-        paymentMethod: PaymentMethod.cash,
-        tableNumber: _tableController.text.trim().isEmpty ? null : _tableController.text.trim(),
-        notes: _nameController.text.trim(), 
+      final sessionProvider = Provider.of<SessionProvider>(context, listen: false);
+      final sessionId = sessionProvider.sessionId ?? 'default-session';
+      
+      final orderItemsInput = cartItems.map((item) => OrderLineInput(
+        menuItemId: item.menuItem.id,
+        quantity: item.quantity,
+      )).toList();
+
+      final orderMap = await OrderRepository().createOrder(
+        sessionId: sessionId,
+        items: orderItemsInput,
+        notes: _nameController.text.trim() + (_tableController.text.trim().isNotEmpty ? ' (Meja: ${_tableController.text.trim()})' : ''), 
       );
+      
+      final orderId = orderMap['id'] as String;
       
       CartService.instance.clearCart();
       if (mounted) {
         // Pop the current OrderScreen and CartScreen and go tracking
         Navigator.popUntil(context, (route) => route.isFirst); // back to home
-        NavigationHelper.toOrderTracking(context, orderId: order.id);
+        NavigationHelper.toOrderTracking(context, orderId: orderId);
       }
     } catch (e) {
       if (mounted) {

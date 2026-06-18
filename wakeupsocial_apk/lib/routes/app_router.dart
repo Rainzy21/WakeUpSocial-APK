@@ -35,6 +35,9 @@ import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/help/screens/privacy_policy_screen.dart';
 import '../features/help/screens/help_center_screen.dart';
 import '../features/help/screens/contact_us_screen.dart';
+import '../features/qr/screens/qr_scan_screen.dart';
+import '../features/wallet/screens/wallet_screen.dart';
+import '../features/cashier/screens/cashier_screen.dart';
 
 /// Generates routes for the app based on [RouteSettings].
 class AppRouter {
@@ -77,6 +80,12 @@ class AppRouter {
         return _buildRoute(const HelpCenterScreen());
       case AppRoutes.contactUs:
         return _buildRoute(const ContactUsScreen());
+      case AppRoutes.qrScan:
+        return _buildRoute(const QrScanScreen());
+      case AppRoutes.wallet:
+        return _buildRoute(const WalletScreen());
+      case AppRoutes.cashier:
+        return _buildRoute(const CashierScreen());
       default:
         return _buildRoute(
           const Scaffold(

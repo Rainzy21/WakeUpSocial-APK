@@ -11,38 +11,14 @@ class ProfileRepository {
     final authUser = _supabase.auth.currentUser;
     if (authUser == null) return null;
 
-    try {
-      final response = await _supabase
-          .from('profiles')
-          .select()
-          .eq('id', authUser.id)
-          .single();
+    final response = await _supabase
+        .from('profiles')
+        .select()
+        .eq('id', authUser.id)
+        .single();
 
-      return UserModel.fromJson(response as Map<String, dynamic>,
-          email: authUser.email);
-    } catch (e) {
-      // PGRST116 means JSON object requested, multiple (or no) rows returned.
-      // In `.single()` context, it usually means no row was found.
-      if (e is PostgrestException && e.code == 'PGRST116') {
-        // Fallback: Create the profile if it doesn't exist
-        final name = authUser.userMetadata?['name'] ?? authUser.email?.split('@').first ?? 'Unknown User';
-        
-        final newProfile = await _supabase
-            .from('profiles')
-            .insert({
-              'id': authUser.id,
-              'name': name,
-              'phone': authUser.userMetadata?['phone'],
-              'avatar_url': authUser.userMetadata?['avatar_url'],
-            })
-            .select()
-            .single();
-
-        return UserModel.fromJson(newProfile as Map<String, dynamic>,
-            email: authUser.email);
-      }
-      rethrow;
-    }
+    return UserModel.fromJson(response,
+        email: authUser.email);
   }
 
   /// Updates the profile of the currently logged-in user.
@@ -50,24 +26,29 @@ class ProfileRepository {
   /// Only [name], [phone], and [avatarUrl] can be updated.
   Future<UserModel> updateProfile({
     required String name,
+    String? email,
     String? phone,
     String? avatarUrl,
   }) async {
     final authUser = _supabase.auth.currentUser;
     if (authUser == null) throw Exception('User belum login');
 
+    if (email != null && email.isNotEmpty && email != authUser.email) {
+      await _supabase.auth.updateUser(UserAttributes(email: email));
+    }
+
     final response = await _supabase
         .from('profiles')
         .update({
           'name': name,
-          if (phone != null) 'phone': phone,
-          if (avatarUrl != null) 'avatar_url': avatarUrl,
+          'phone': ?phone,
+          'avatar_url': ?avatarUrl,
         })
         .eq('id', authUser.id)
         .select()
         .single();
 
-    return UserModel.fromJson(response as Map<String, dynamic>,
+    return UserModel.fromJson(response,
         email: authUser.email);
   }
 

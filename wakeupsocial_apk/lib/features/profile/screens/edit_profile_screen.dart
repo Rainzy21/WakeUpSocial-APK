@@ -93,12 +93,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.search, color: AppColors.textPrimary, size: 22),
-          ),
-        ],
       ),
       body: ShimmerLoading(
         isLoading: _isLoading,
@@ -188,7 +182,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             _buildInputField(
               controller: _emailController,
               icon: Icons.mail_outline,
-              readOnly: true,
             ),
             const SizedBox(height: 32),
 
@@ -202,8 +195,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   final firstName = _firstNameController.text.trim();
                   final lastName = _lastNameController.text.trim();
                   final fullName = [firstName, lastName].where((s) => s.isNotEmpty).join(' ');
+                  final email = _emailController.text.trim();
                   
-                  await ProfileRepository().updateProfile(name: fullName);
+                  await ProfileRepository().updateProfile(name: fullName, email: email);
                   
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(

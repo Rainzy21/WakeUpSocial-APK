@@ -9,6 +9,16 @@ import '../../../data/repositories/order_repository.dart';
 /// ============================================================
 /// OrderDetailScreen — Halaman detail satu pesanan.
 /// ============================================================
+///
+/// Sesuai mockup desain:
+/// - AppBar: "← ORDER DETAIL" + search icon
+/// - Name Order (field readonly)
+/// - Order number (field readonly)
+/// - Table number (field readonly)
+/// - Order summary: daftar item + quantity + harga
+/// - Total
+///
+/// TODO: Ganti mock data dengan data asli dari repository.
 class OrderDetailScreen extends StatefulWidget {
   final String orderId;
 
@@ -48,13 +58,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   String _formatPrice(double price) {
-    final str = price.toInt().toString().split('').reversed.join('');
+    final str = price.toInt().toString();
     final buffer = StringBuffer();
     for (int i = 0; i < str.length; i++) {
-      if (i > 0 && i % 3 == 0) buffer.write('.');
+      if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
       buffer.write(str[i]);
     }
-    return 'Rp ${buffer.toString().split('').reversed.join('')}';
+    return 'Rp $buffer';
   }
 
   @override
@@ -88,216 +98,134 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       body: ShimmerLoading(
         isLoading: _isLoading,
         skeleton: const OrderDetailSkeleton(),
-        child: _order == null
+        child: _order == null 
             ? const Center(child: Text('Pesanan tidak ditemukan'))
             : SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ─── STATUS ORDER ────────────────────────────────
-                    Row(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ─── NAME ORDER ──────────────────────────────────
+            const Text(
+              'Name Order',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            _buildReadonlyField(_order!.notes?.replaceAll('Atas nama: ', '') ?? '-'),
+            const SizedBox(height: 16),
+
+            // ─── ORDER NUMBER ────────────────────────────────
+            const Text(
+              'Order number',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            _buildReadonlyField('#${_order!.id.split('-').first.toUpperCase()}'),
+            const SizedBox(height: 16),
+
+            // ─── TABLE NUMBER ────────────────────────────────
+            const Text(
+              'Table number',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            _buildReadonlyField(_order!.tableNumber ?? '-'),
+            const SizedBox(height: 24),
+
+            // ─── ORDER SUMMARY ───────────────────────────────
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Order summary',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Item list
+                  ..._order!.items.map((item) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Status',
+                        Text(
+                          '${item.name}  x${item.quantity}',
                           style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        Text(
+                          _formatPrice(item.price * item.quantity),
+                          style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: _order!.status == OrderStatus.delivered
-                                ? Colors.green.shade50
-                                : AppColors.accent.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            _order!.status.displayName,
-                            style: TextStyle(
-                              color: _order!.status == OrderStatus.delivered
-                                  ? Colors.green.shade700
-                                  : AppColors.accent,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                  )),
 
-                    // ─── NAME ORDER ──────────────────────────────────
-                    const Text(
-                      'Nama Pemesan',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    _buildReadonlyField(_order!.notes ?? '-'),
-                    const SizedBox(height: 16),
+                  const Divider(height: 16),
 
-                    // ─── ORDER NUMBER & TABLE ────────────────────────────────
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Order Number',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              _buildReadonlyField('#${_order!.id.substring(0, 8).toUpperCase()}'),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Table',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              _buildReadonlyField(_order!.tableNumber ?? '-'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-
-                    // ─── ORDER SUMMARY ───────────────────────────────
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Order summary',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-
-                          // Item list
-                          ..._order!.items.map((item) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '${item.name}  x${item.quantity}',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: AppColors.textSecondary,
-                                      ),
-                                    ),
-                                    Text(
-                                      _formatPrice(item.subtotal),
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )),
-
-                          const Divider(height: 16),
-
-                          // Total
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Total',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              Text(
-                                _formatPrice(_order!.totalPrice),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 32),
-
-                    // ─── LIHAT STRUK BUTTON (Only if Delivered) ───────────
-                    if (_order!.status == OrderStatus.delivered)
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/order/receipt', arguments: _order!.id);
-                          },
-                          icon: const Icon(Icons.receipt_long, color: Colors.white, size: 20),
-                          label: const Text(
-                            'Lihat Struk',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
+                  // Total
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
                         ),
                       ),
-                  ],
-                ),
+                      Text(
+                        _formatPrice(_order!.totalPrice),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
+            ),
+          ],
+        ),
+        ),
       ),
     );
   }
 
-  /// Field readonly dengan background abu-abu.
+  /// Field readonly dengan background abu-abu (sesuai desain mockup).
   Widget _buildReadonlyField(String value) {
     return Container(
       width: double.infinity,

@@ -67,16 +67,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.search, color: AppColors.textPrimary, size: 22),
-          ),
-        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : SingleChildScrollView(
+          : _profile == null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Masuk untuk melihat profil & wallet'),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => NavigationHelper.toLogin(context),
+                        child: const Text('Login'),
+                      ),
+                    ],
+                  ),
+                )
+              : SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               child: Column(
@@ -121,9 +129,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       children: [
                         ProfileMenuItem(
+                          icon: Icons.account_balance_wallet_outlined,
+                          label: 'Wallet & Stamps',
+                          onTap: () => NavigationHelper.toWallet(context),
+                        ),
+                        const Divider(height: 1, indent: 56),
+                        ProfileMenuItem(
+                          icon: Icons.qr_code_scanner,
+                          label: 'Scan Table QR',
+                          onTap: () => NavigationHelper.toQrScan(context),
+                        ),
+                        if (_profile?.isCashier == true) ...[
+                          const Divider(height: 1, indent: 56),
+                          ProfileMenuItem(
+                            icon: Icons.point_of_sale,
+                            label: 'Cashier Dashboard',
+                            onTap: () => NavigationHelper.toCashier(context),
+                          ),
+                        ],
+                        const Divider(height: 1, indent: 56),
+                        ProfileMenuItem(
                           icon: Icons.access_time,
                           label: 'Order History',
-                          onTap: () => Navigator.pushNamed(context, AppRoutes.orderHistory),
+                          onTap: () => NavigationHelper.toOrderHistory(context),
                         ),
                         const Divider(height: 1, indent: 56),
                         ProfileMenuItem(
@@ -244,11 +272,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       await AuthRepository().signOut();
                       // Pindah ke halaman Login (dan hapus stack navigasi sebelumnya)
                       if (context.mounted) {
-                        Navigator.pushNamedAndRemoveUntil(
-                          context, 
-                          AppRoutes.login, 
-                          (route) => false,
-                        );
+                        NavigationHelper.toHome(context);
                       }
                     },
                     style: ElevatedButton.styleFrom(
