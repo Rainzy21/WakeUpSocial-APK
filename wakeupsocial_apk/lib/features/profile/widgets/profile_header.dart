@@ -56,11 +56,30 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(
-                  alpha: _isPressed ? 0.10 : _isHovered ? 0.08 : 0.05,
+                  alpha: _isPressed
+                      ? 0.10
+                      : _isHovered
+                      ? 0.08
+                      : 0.05,
                 ),
-                blurRadius: _isPressed ? 6 : _isHovered ? 16 : 8,
-                offset: Offset(0, _isPressed ? 1 : _isHovered ? 6 : 3),
-                spreadRadius: _isPressed ? 0 : _isHovered ? 1 : 0,
+                blurRadius: _isPressed
+                    ? 6
+                    : _isHovered
+                    ? 16
+                    : 8,
+                offset: Offset(
+                  0,
+                  _isPressed
+                      ? 1
+                      : _isHovered
+                      ? 6
+                      : 3,
+                ),
+                spreadRadius: _isPressed
+                    ? 0
+                    : _isHovered
+                    ? 1
+                    : 0,
               ),
             ],
           ),
@@ -73,8 +92,8 @@ class _ProfileHeaderState extends State<ProfileHeader> {
               CircleAvatar(
                 radius: 28,
                 backgroundColor: AppColors.surface,
-                backgroundImage: widget.avatarUrl != null &&
-                        widget.avatarUrl!.isNotEmpty
+                backgroundImage:
+                    widget.avatarUrl != null && widget.avatarUrl!.isNotEmpty
                     ? NetworkImage(widget.avatarUrl!)
                     : null,
                 child: widget.avatarUrl == null || widget.avatarUrl!.isEmpty

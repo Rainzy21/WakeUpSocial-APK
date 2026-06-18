@@ -28,10 +28,7 @@ import '../../../core/constants/app_colors.dart';
 class HeroSection extends StatelessWidget {
   final VoidCallback onExploreMenu;
 
-  const HeroSection({
-    super.key,
-    required this.onExploreMenu,
-  });
+  const HeroSection({super.key, required this.onExploreMenu});
 
   /// ─── BACKGROUND ONLY ──────────────────────────────────────
   /// Mengembalikan hanya gambar background (untuk parallax).
@@ -102,10 +99,7 @@ class HeroSection extends StatelessWidget {
                 ),
                 child: const Text(
                   'Explore the menu',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ),
             ],

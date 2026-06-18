@@ -20,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authRepo = AuthRepository();
-  
+
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -51,9 +51,9 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } on AuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.message)));
       }
     } catch (e) {
       if (mounted) {
@@ -72,9 +72,9 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     try {
       final success = await _authRepo.signInWithGoogle();
-      // The browser will open. If the user completes the flow, the app will resume 
+      // The browser will open. If the user completes the flow, the app will resume
       // via deep link. The Supabase SDK will automatically handle the session.
-      // We don't necessarily navigate here because the deep link handles it, 
+      // We don't necessarily navigate here because the deep link handles it,
       // but if the future returns false, we can handle it.
       if (!success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -83,9 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     } finally {
       if (mounted) {
@@ -157,10 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // ─── TOMBOL SIGN IN ────────────────────────────
               _isLoading
                   ? const CircularProgressIndicator(color: AppColors.primary)
-                  : CustomButton(
-                      text: 'Sign In',
-                      onPressed: _handleSignIn,
-                    ),
+                  : CustomButton(text: 'Sign In', onPressed: _handleSignIn),
               const SizedBox(height: 24),
 
               // ─── DIVIDER "Or Sign Up With" ─────────────────
@@ -186,7 +183,11 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildSocialButton(Icons.g_mobiledata, 'Google', _handleGoogleSignIn),
+                  _buildSocialButton(
+                    Icons.g_mobiledata,
+                    'Google',
+                    _handleGoogleSignIn,
+                  ),
                 ],
               ),
               const SizedBox(height: 24),

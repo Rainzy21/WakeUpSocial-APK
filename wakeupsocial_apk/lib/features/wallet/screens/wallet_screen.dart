@@ -23,13 +23,17 @@ class _WalletScreenState extends State<WalletScreen> {
   Future<void> _load() async {
     try {
       final wallet = await _walletRepo.getWallet();
-      if (mounted) setState(() { _wallet = wallet; _loading = false; });
+      if (mounted)
+        setState(() {
+          _wallet = wallet;
+          _loading = false;
+        });
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat wallet: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat wallet: $e')));
       }
     }
   }
@@ -50,12 +54,16 @@ class _WalletScreenState extends State<WalletScreen> {
                 padding: const EdgeInsets.all(20),
                 children: [
                   _StampCard(
-                    stamps: (_wallet?['current_stamp_count'] as num?)?.toInt() ?? 0,
+                    stamps:
+                        (_wallet?['current_stamp_count'] as num?)?.toInt() ?? 0,
                     points: (_wallet?['loyalty_points'] as num?)?.toInt() ?? 0,
                     tier: _wallet?['current_tier'] as String? ?? 'BRONZE',
                   ),
                   const SizedBox(height: 24),
-                  const Text('Kupon Tersedia', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text(
+                    'Kupon Tersedia',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   const SizedBox(height: 12),
                   ..._buildCoupons(),
                 ],
@@ -103,7 +111,10 @@ class _StampCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Tier $tier', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          Text(
+            'Tier $tier',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
           const SizedBox(height: 8),
           Text('$points poin'),
           const SizedBox(height: 16),

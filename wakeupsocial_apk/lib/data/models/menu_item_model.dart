@@ -33,7 +33,8 @@ class MenuItemModel {
       categoryId: json['category_id'] as String?,
       category: json['menu_categories'] != null
           ? MenuCategoryModel.fromJson(
-              json['menu_categories'] as Map<String, dynamic>)
+              json['menu_categories'] as Map<String, dynamic>,
+            )
           : null,
       name: json['name'] as String,
       description: json['description'] as String?,
@@ -51,8 +52,7 @@ class MenuItemModel {
 
   int get priceInt => price.round();
 
-  String get categoryName =>
-      category?.name ?? 'Lainnya';
+  String get categoryName => category?.name ?? 'Lainnya';
 
   Map<String, dynamic> toJson() {
     return {

@@ -165,11 +165,7 @@ class SkeletonLine extends StatelessWidget {
   final double width;
   final double height;
 
-  const SkeletonLine({
-    super.key,
-    required this.width,
-    this.height = 12,
-  });
+  const SkeletonLine({super.key, required this.width, this.height = 12});
 
   @override
   Widget build(BuildContext context) {

@@ -49,8 +49,12 @@ class MenuDrinkSubChips extends StatelessWidget {
                     sub,
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w400,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -59,7 +63,9 @@ class MenuDrinkSubChips extends StatelessWidget {
                     height: 2,
                     width: 20,
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary : Colors.transparent,
+                      color: isSelected
+                          ? AppColors.primary
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(1),
                     ),
                   ),

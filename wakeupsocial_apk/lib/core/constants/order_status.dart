@@ -94,8 +94,10 @@ String orderTrackingEtaMessage({
       final reference = updatedAt ?? createdAt;
       if (reference != null) {
         final elapsed = DateTime.now().difference(reference).inMinutes;
-        final remaining =
-            (status.estimatedPrepMinutes - elapsed).clamp(1, status.estimatedPrepMinutes);
+        final remaining = (status.estimatedPrepMinutes - elapsed).clamp(
+          1,
+          status.estimatedPrepMinutes,
+        );
         return 'Perkiraan $remaining menit lagi';
       }
       return 'Perkiraan ${status.estimatedPrepMinutes} menit lagi';

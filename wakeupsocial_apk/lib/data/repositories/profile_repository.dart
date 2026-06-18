@@ -44,11 +44,7 @@ class ProfileRepository {
 
         final response = await _supabase
             .from('profiles')
-            .update({
-              'name': name,
-              'phone': ?phone,
-              'avatar_url': ?avatarUrl,
-            })
+            .update({'name': name, 'phone': ?phone, 'avatar_url': ?avatarUrl})
             .eq('id', authUser.id)
             .select()
             .single();
@@ -71,11 +67,15 @@ class ProfileRepository {
 
         final filePath = '${authUser.id}/avatar.$fileExt';
 
-        await _supabase.storage.from('avatars').uploadBinary(
+        await _supabase.storage
+            .from('avatars')
+            .uploadBinary(
               filePath,
               fileBytes,
-              fileOptions:
-                  FileOptions(upsert: true, contentType: 'image/$fileExt'),
+              fileOptions: FileOptions(
+                upsert: true,
+                contentType: 'image/$fileExt',
+              ),
             );
 
         return _supabase.storage.from('avatars').getPublicUrl(filePath);

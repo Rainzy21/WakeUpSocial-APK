@@ -58,7 +58,11 @@ class _CartScreenState extends State<CartScreen> {
         centerTitle: false,
         leading: IconButton(
           onPressed: () => NavigationHelper.back(context),
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimary,
+            size: 22,
+          ),
         ),
         title: const Text(
           'CART',
@@ -72,12 +76,19 @@ class _CartScreenState extends State<CartScreen> {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.search, color: AppColors.textPrimary, size: 22),
+            icon: const Icon(
+              Icons.search,
+              color: AppColors.textPrimary,
+              size: 22,
+            ),
           ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: AppColors.divider.withValues(alpha: 0.5)),
+          child: Container(
+            height: 1,
+            color: AppColors.divider.withValues(alpha: 0.5),
+          ),
         ),
       ),
       body: ShimmerLoading(
@@ -86,7 +97,9 @@ class _CartScreenState extends State<CartScreen> {
         child: Consumer<CartProvider>(
           builder: (context, cart, _) {
             final cartItems = cart.items;
-            return cartItems.isEmpty ? _buildEmptyState() : _buildCartList(cart, cartItems);
+            return cartItems.isEmpty
+                ? _buildEmptyState()
+                : _buildCartList(cart, cartItems);
           },
         ),
       ),
@@ -119,7 +132,11 @@ class _CartScreenState extends State<CartScreen> {
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Icon(Icons.shopping_bag_outlined, size: 36, color: Colors.grey[400]),
+            child: Icon(
+              Icons.shopping_bag_outlined,
+              size: 36,
+              color: Colors.grey[400],
+            ),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -277,9 +294,7 @@ class _CartItemCardState extends State<_CartItemCard> {
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(
-                alpha: _isHovered ? 0.08 : 0.04,
-              ),
+              color: Colors.black.withValues(alpha: _isHovered ? 0.08 : 0.04),
               blurRadius: _isHovered ? 16 : 8,
               offset: Offset(0, _isHovered ? 6 : 3),
               spreadRadius: _isHovered ? 1 : 0,
@@ -297,8 +312,8 @@ class _CartItemCardState extends State<_CartItemCard> {
                 color: AppColors.surface,
                 child: widget.imageUrl != null && widget.imageUrl!.isNotEmpty
                     ? (widget.imageUrl!.startsWith('http')
-                        ? Image.network(widget.imageUrl!, fit: BoxFit.cover)
-                        : Image.asset(widget.imageUrl!, fit: BoxFit.cover))
+                          ? Image.network(widget.imageUrl!, fit: BoxFit.cover)
+                          : Image.asset(widget.imageUrl!, fit: BoxFit.cover))
                     : Icon(Icons.coffee, color: Colors.grey[500], size: 28),
               ),
             ),
@@ -344,7 +359,11 @@ class _CartItemCardState extends State<_CartItemCard> {
                   color: AppColors.error.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.delete_outline, color: AppColors.error, size: 18),
+                child: Icon(
+                  Icons.delete_outline,
+                  color: AppColors.error,
+                  size: 18,
+                ),
               ),
             ),
           ],
@@ -369,7 +388,14 @@ class _CartItemCardState extends State<_CartItemCard> {
               width: 32,
               height: 30,
               child: Center(
-                child: Text('−', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                child: Text(
+                  '−',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
           ),
@@ -401,7 +427,14 @@ class _CartItemCardState extends State<_CartItemCard> {
               width: 32,
               height: 30,
               child: Center(
-                child: Text('+', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                child: Text(
+                  '+',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ),
           ),
@@ -451,10 +484,25 @@ class _HoverButtonState extends State<_HoverButton> {
             boxShadow: [
               BoxShadow(
                 color: AppColors.accent.withValues(
-                  alpha: _isPressed ? 0.15 : _isHovered ? 0.25 : 0.1,
+                  alpha: _isPressed
+                      ? 0.15
+                      : _isHovered
+                      ? 0.25
+                      : 0.1,
                 ),
-                blurRadius: _isPressed ? 4 : _isHovered ? 14 : 6,
-                offset: Offset(0, _isPressed ? 1 : _isHovered ? 5 : 2),
+                blurRadius: _isPressed
+                    ? 4
+                    : _isHovered
+                    ? 14
+                    : 6,
+                offset: Offset(
+                  0,
+                  _isPressed
+                      ? 1
+                      : _isHovered
+                      ? 5
+                      : 2,
+                ),
               ),
             ],
           ),

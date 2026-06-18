@@ -25,13 +25,16 @@ class OrderRepository {
       operation: 'order.create',
       maxRetries: 1,
       action: () async {
-        final result = await _supabase.rpc('create_order', params: {
-          'p_idempotency_key': key,
-          'p_session_id': sessionId,
-          'p_items': payload,
-          'p_coupon_id': couponId,
-          'p_notes': notes,
-        });
+        final result = await _supabase.rpc(
+          'create_order',
+          params: {
+            'p_idempotency_key': key,
+            'p_session_id': sessionId,
+            'p_items': payload,
+            'p_coupon_id': couponId,
+            'p_notes': notes,
+          },
+        );
         return Map<String, dynamic>.from(result as Map? ?? {});
       },
     );
@@ -81,10 +84,12 @@ class OrderRepository {
         final response = await _supabase
             .from('orders')
             .select('*, order_items(*)')
-            .inFilter(
-              'status_v2',
-              ['SUBMITTED', 'REVIEWING', 'CONFIRMED', 'READY'],
-            )
+            .inFilter('status_v2', [
+              'SUBMITTED',
+              'REVIEWING',
+              'CONFIRMED',
+              'READY',
+            ])
             .order('created_at')
             .limit(50);
         return (response as List).cast<Map<String, dynamic>>();
@@ -151,8 +156,9 @@ class OrderLineInput {
 }
 
 extension OrderMapExtension on Map<String, dynamic> {
-  OrderStatusV2 get statusV2 =>
-      OrderStatusV2.fromDb(this['status_v2'] as String? ?? this['status'] as String?);
+  OrderStatusV2 get statusV2 => OrderStatusV2.fromDb(
+    this['status_v2'] as String? ?? this['status'] as String?,
+  );
 
   int get totalAmountInt =>
       (this['total_amount'] as num?)?.toInt() ??

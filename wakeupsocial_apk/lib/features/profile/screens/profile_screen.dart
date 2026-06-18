@@ -40,9 +40,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat profil: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat profil: $e')));
       }
     }
   }
@@ -71,22 +71,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : _profile == null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('Masuk untuk melihat profil & wallet'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => NavigationHelper.toLogin(context),
-                        child: const Text('Login'),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Masuk untuk melihat profil & wallet'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => NavigationHelper.toLogin(context),
+                    child: const Text('Login'),
                   ),
-                )
-              : SingleChildScrollView(
+                ],
+              ),
+            )
+          : SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               child: Column(
@@ -160,7 +162,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ProfileMenuItem(
                           icon: Icons.shield_outlined,
                           label: 'Privacy & Policy',
-                          onTap: () => Navigator.pushNamed(context, AppRoutes.privacyPolicy),
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            AppRoutes.privacyPolicy,
+                          ),
                         ),
                       ],
                     ),
@@ -196,13 +201,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ProfileMenuItem(
                           icon: Icons.help_outline,
                           label: 'Help center / FAQ',
-                          onTap: () => Navigator.pushNamed(context, AppRoutes.helpCenter),
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            AppRoutes.helpCenter,
+                          ),
                         ),
                         const Divider(height: 1, indent: 56),
                         ProfileMenuItem(
                           icon: Icons.headset_mic_outlined,
                           label: 'Contact Us',
-                          onTap: () => Navigator.pushNamed(context, AppRoutes.contactUs),
+                          onTap: () =>
+                              Navigator.pushNamed(context, AppRoutes.contactUs),
                         ),
                         const Divider(height: 1, indent: 56),
                         ProfileMenuItem(
@@ -289,7 +298,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     child: const Text(
                       'Log out',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

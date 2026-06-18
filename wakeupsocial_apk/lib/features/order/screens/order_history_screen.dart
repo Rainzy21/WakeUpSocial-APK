@@ -42,9 +42,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading orders: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading orders: $e')));
       }
     }
   }
@@ -59,7 +59,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         centerTitle: false,
         leading: IconButton(
           onPressed: () => NavigationHelper.back(context),
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimary,
+            size: 22,
+          ),
         ),
         title: const Text(
           'Order History',
@@ -71,62 +75,71 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : _orders.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.receipt_long, size: 64, color: Colors.grey),
-                      SizedBox(height: 12),
-                      Text('Belum ada pesanan', style: TextStyle(color: Colors.grey)),
-                    ],
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.receipt_long, size: 64, color: Colors.grey),
+                  SizedBox(height: 12),
+                  Text(
+                    'Belum ada pesanan',
+                    style: TextStyle(color: Colors.grey),
                   ),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  itemCount: _orders.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 0),
-                  itemBuilder: (context, index) {
-                    final order = _orders[index];
-                    
-                    final menuCount = order.items.fold<int>(0, (sum, item) => sum + item.quantity);
-                    final orderNumber = order.id.substring(0, 6).toUpperCase();
-                    final dateStr = '${order.createdAt.day.toString().padLeft(2, '0')}-${order.createdAt.month.toString().padLeft(2, '0')}-${order.createdAt.year}';
-                    
-                    String name = 'Order';
-                    if (order.items.isNotEmpty) {
-                      name = order.items.first.name;
-                      if (order.items.length > 1) {
-                        name += ' +${order.items.length - 1} lainnya';
-                      }
-                    }
+                ],
+              ),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              itemCount: _orders.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 0),
+              itemBuilder: (context, index) {
+                final order = _orders[index];
 
-                    Color statusColor = const Color(0xFF388E3C);
-                    Color statusBgColor = const Color(0xFFE8F5E9);
-                    if (order.status == OrderStatus.pending) {
-                      statusColor = Colors.orange;
-                      statusBgColor = Colors.orange.shade50;
-                    } else if (order.status == OrderStatus.cancelled) {
-                      statusColor = Colors.red;
-                      statusBgColor = Colors.red.shade50;
-                    }
+                final menuCount = order.items.fold<int>(
+                  0,
+                  (sum, item) => sum + item.quantity,
+                );
+                final orderNumber = order.id.substring(0, 6).toUpperCase();
+                final dateStr =
+                    '${order.createdAt.day.toString().padLeft(2, '0')}-${order.createdAt.month.toString().padLeft(2, '0')}-${order.createdAt.year}';
 
-                    return _OrderHistoryCard(
-                      name: name,
-                      menuCount: menuCount.toString(),
-                      orderNumber: orderNumber,
-                      date: dateStr,
-                      status: order.status.displayName,
-                      statusColor: statusColor,
-                      statusBgColor: statusBgColor,
-                      onTap: () => NavigationHelper.toOrderDetail(
-                        context,
-                        orderId: order.id,
-                      ),
-                    );
-                  },
-                ),
+                String name = 'Order';
+                if (order.items.isNotEmpty) {
+                  name = order.items.first.name;
+                  if (order.items.length > 1) {
+                    name += ' +${order.items.length - 1} lainnya';
+                  }
+                }
+
+                Color statusColor = const Color(0xFF388E3C);
+                Color statusBgColor = const Color(0xFFE8F5E9);
+                if (order.status == OrderStatus.pending) {
+                  statusColor = Colors.orange;
+                  statusBgColor = Colors.orange.shade50;
+                } else if (order.status == OrderStatus.cancelled) {
+                  statusColor = Colors.red;
+                  statusBgColor = Colors.red.shade50;
+                }
+
+                return _OrderHistoryCard(
+                  name: name,
+                  menuCount: menuCount.toString(),
+                  orderNumber: orderNumber,
+                  date: dateStr,
+                  status: order.status.displayName,
+                  statusColor: statusColor,
+                  statusBgColor: statusBgColor,
+                  onTap: () => NavigationHelper.toOrderDetail(
+                    context,
+                    orderId: order.id,
+                  ),
+                );
+              },
+            ),
     );
   }
 }
@@ -217,7 +230,11 @@ class _OrderHistoryCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Icon(Icons.calendar_today_outlined, size: 12, color: AppColors.textSecondary),
+                      Icon(
+                        Icons.calendar_today_outlined,
+                        size: 12,
+                        color: AppColors.textSecondary,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         date,
@@ -262,4 +279,3 @@ class _OrderHistoryCard extends StatelessWidget {
     );
   }
 }
-

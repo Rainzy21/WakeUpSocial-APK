@@ -39,9 +39,9 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading receipt: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading receipt: $e')));
       }
     }
   }
@@ -64,7 +64,8 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
         backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,
-        automaticallyImplyLeading: false, // We'll have a custom back to home button
+        automaticallyImplyLeading:
+            false, // We'll have a custom back to home button
         title: const Text(
           'E-RECEIPT',
           style: TextStyle(
@@ -76,10 +77,12 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : _order == null
-              ? const Center(child: Text('Pesanan tidak ditemukan'))
-              : _buildReceiptContent(),
+          ? const Center(child: Text('Pesanan tidak ditemukan'))
+          : _buildReceiptContent(),
     );
   }
 
@@ -134,15 +137,26 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
-                      _buildInfoRow('Order ID', '#${_order!.id.substring(0, 8).toUpperCase()}'),
+                      _buildInfoRow(
+                        'Order ID',
+                        '#${_order!.id.substring(0, 8).toUpperCase()}',
+                      ),
                       const SizedBox(height: 12),
-                      _buildInfoRow('Date', '${_order!.createdAt.day}-${_order!.createdAt.month}-${_order!.createdAt.year} ${_order!.createdAt.hour}:${_order!.createdAt.minute.toString().padLeft(2, '0')}'),
+                      _buildInfoRow(
+                        'Date',
+                        '${_order!.createdAt.day}-${_order!.createdAt.month}-${_order!.createdAt.year} ${_order!.createdAt.hour}:${_order!.createdAt.minute.toString().padLeft(2, '0')}',
+                      ),
                       const SizedBox(height: 12),
                       _buildInfoRow('Name', _order!.notes ?? '-'),
                       const SizedBox(height: 12),
                       _buildInfoRow('Table No.', _order!.tableNumber ?? '-'),
                       const SizedBox(height: 12),
-                      _buildInfoRow('Status', 'PAID / DELIVERED', isBold: true, color: const Color(0xFF388E3C)),
+                      _buildInfoRow(
+                        'Status',
+                        'PAID / DELIVERED',
+                        isBold: true,
+                        color: const Color(0xFF388E3C),
+                      ),
                     ],
                   ),
                 ),
@@ -257,16 +271,18 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value, {bool isBold = false, Color? color}) {
+  Widget _buildInfoRow(
+    String label,
+    String value, {
+    bool isBold = false,
+    Color? color,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
         ),
         Text(
           value,

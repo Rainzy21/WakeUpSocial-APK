@@ -47,7 +47,7 @@ class _MenuScreenState extends State<MenuScreen> {
     try {
       final categories = await _menuRepository.getCategories();
       final items = await _menuRepository.getMenuItems();
-      
+
       if (mounted) {
         setState(() {
           _categories = categories;
@@ -58,9 +58,9 @@ class _MenuScreenState extends State<MenuScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat menu: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat menu: $e')));
       }
     }
   }
@@ -123,7 +123,9 @@ class _MenuScreenState extends State<MenuScreen> {
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : SingleChildScrollView(
               controller: _scrollController,
               physics: const BouncingScrollPhysics(),

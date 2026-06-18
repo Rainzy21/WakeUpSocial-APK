@@ -56,9 +56,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading profile: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading profile: $e')));
       }
     }
   }
@@ -81,7 +81,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         centerTitle: false,
         leading: IconButton(
           onPressed: () => NavigationHelper.back(context),
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimary,
+            size: 22,
+          ),
         ),
         title: const Text(
           'Edit Profile',
@@ -96,126 +100,138 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         isLoading: _isLoading,
         skeleton: const ProfileFormSkeleton(fieldCount: 3),
         child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
 
-            // ─── AVATAR ──────────────────────────────────────
-            Center(
-              child: Stack(
-                children: [
-                  CircleAvatar(
-                    radius: 48,
-                    backgroundColor: AppColors.surface,
-                    child: Icon(
-                      Icons.person,
-                      size: 48,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.divider),
+              // ─── AVATAR ──────────────────────────────────────
+              Center(
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 48,
+                      backgroundColor: AppColors.surface,
+                      child: Icon(
+                        Icons.person,
+                        size: 48,
+                        color: AppColors.textSecondary,
                       ),
-                      child: const Icon(Icons.person_outline, size: 14, color: AppColors.textSecondary),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.divider),
+                        ),
+                        child: const Icon(
+                          Icons.person_outline,
+                          size: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 32),
+              const SizedBox(height: 32),
 
-            // ─── FIRST NAME ──────────────────────────────────
-            const Text(
-              'first Name',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
+              // ─── FIRST NAME ──────────────────────────────────
+              const Text(
+                'first Name',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            _buildInputField(
-              controller: _firstNameController,
-              icon: Icons.person_outline,
-            ),
-            const SizedBox(height: 20),
-
-            // ─── LAST NAME ───────────────────────────────────
-            const Text(
-              'Last Name',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
+              const SizedBox(height: 8),
+              _buildInputField(
+                controller: _firstNameController,
+                icon: Icons.person_outline,
               ),
-            ),
-            const SizedBox(height: 8),
-            _buildInputField(
-              controller: _lastNameController,
-              icon: Icons.person_outline,
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // ─── EMAIL ───────────────────────────────────────
-            const Text(
-              'Email',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
+              // ─── LAST NAME ───────────────────────────────────
+              const Text(
+                'Last Name',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            _buildInputField(
-              controller: _emailController,
-              icon: Icons.mail_outline,
-            ),
-            const SizedBox(height: 32),
+              const SizedBox(height: 8),
+              _buildInputField(
+                controller: _lastNameController,
+                icon: Icons.person_outline,
+              ),
+              const SizedBox(height: 20),
 
-            // ─── CONFIRM EDIT BUTTON ─────────────────────────
-            _HoverShadowButton(
-              label: 'Confirm edit',
-              onTap: () async {
-                if (_profile == null) return;
-                setState(() => _isLoading = true);
-                try {
-                  final firstName = _firstNameController.text.trim();
-                  final lastName = _lastNameController.text.trim();
-                  final fullName = [firstName, lastName].where((s) => s.isNotEmpty).join(' ');
-                  final email = _emailController.text.trim();
-                  
-                  await ProfileRepository().updateProfile(name: fullName, email: email);
-                  
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Profile updated successfully')),
+              // ─── EMAIL ───────────────────────────────────────
+              const Text(
+                'Email',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _buildInputField(
+                controller: _emailController,
+                icon: Icons.mail_outline,
+              ),
+              const SizedBox(height: 32),
+
+              // ─── CONFIRM EDIT BUTTON ─────────────────────────
+              _HoverShadowButton(
+                label: 'Confirm edit',
+                onTap: () async {
+                  if (_profile == null) return;
+                  setState(() => _isLoading = true);
+                  try {
+                    final firstName = _firstNameController.text.trim();
+                    final lastName = _lastNameController.text.trim();
+                    final fullName = [
+                      firstName,
+                      lastName,
+                    ].where((s) => s.isNotEmpty).join(' ');
+                    final email = _emailController.text.trim();
+
+                    await ProfileRepository().updateProfile(
+                      name: fullName,
+                      email: email,
                     );
-                    NavigationHelper.back(context);
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Profile updated successfully'),
+                        ),
+                      );
+                      NavigationHelper.back(context);
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to update profile: $e')),
+                      );
+                      setState(() => _isLoading = false);
+                    }
                   }
-                } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to update profile: $e')),
-                    );
-                    setState(() => _isLoading = false);
-                  }
-                }
-              },
-            ),
-          ],
+                },
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -240,7 +256,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           color: readOnly ? AppColors.textSecondary : AppColors.textPrimary,
         ),
         decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
           border: InputBorder.none,
           suffixIcon: Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -285,17 +304,30 @@ class _HoverShadowButtonState extends State<_HoverShadowButton> {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: _isPressed
-                ? AppColors.primaryDark
-                : AppColors.primary,
+            color: _isPressed ? AppColors.primaryDark : AppColors.primary,
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
                 color: AppColors.primary.withValues(
-                  alpha: _isPressed ? 0.4 : _isHovered ? 0.3 : 0.0,
+                  alpha: _isPressed
+                      ? 0.4
+                      : _isHovered
+                      ? 0.3
+                      : 0.0,
                 ),
-                blurRadius: _isPressed ? 8 : _isHovered ? 16 : 0,
-                offset: Offset(0, _isPressed ? 2 : _isHovered ? 6 : 0),
+                blurRadius: _isPressed
+                    ? 8
+                    : _isHovered
+                    ? 16
+                    : 0,
+                offset: Offset(
+                  0,
+                  _isPressed
+                      ? 2
+                      : _isHovered
+                      ? 6
+                      : 0,
+                ),
               ),
             ],
           ),

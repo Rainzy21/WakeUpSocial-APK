@@ -51,9 +51,9 @@ class _LandingScreenState extends State<LandingScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat best seller: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat best seller: $e')));
       }
     }
   }
@@ -110,7 +110,9 @@ class _LandingScreenState extends State<LandingScreen> {
 
         // ─── BEST SELLER ─────────────────────────────────────
         _isLoading
-            ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
             : BestSellerSection(
                 items: _bestSellers,
                 onSeeAll: () => NavigationHelper.toMenu(context),

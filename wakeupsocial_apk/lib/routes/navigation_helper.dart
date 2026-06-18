@@ -21,7 +21,7 @@ class NavigationHelper {
   NavigationHelper._();
 
   // ─── AUTH ────────────────────────────────────────────────────
-  
+
   /// Navigasi ke halaman Login (hapus semua history).
   static void toLogin(BuildContext context) =>
       Navigator.pushNamed(context, AppRoutes.login);
@@ -64,7 +64,10 @@ class NavigationHelper {
       Navigator.pushNamed(context, AppRoutes.orderHistory);
 
   /// Navigasi ke halaman Order Tracking berdasarkan [orderId].
-  static void toOrderTracking(BuildContext context, {required String orderId}) =>
+  static void toOrderTracking(
+    BuildContext context, {
+    required String orderId,
+  }) =>
       Navigator.pushNamed(context, AppRoutes.orderTracking, arguments: orderId);
 
   /// Navigasi ke halaman Receipt / Struk.

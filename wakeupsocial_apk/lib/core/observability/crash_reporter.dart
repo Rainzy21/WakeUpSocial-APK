@@ -15,9 +15,10 @@ class CrashReporter {
 
     if (dsn.isEmpty) {
       _installFallbackHandlers();
-      AppLogger.info('crash_reporter.disabled', context: {
-        'reason': 'SENTRY_DSN not set',
-      });
+      AppLogger.info(
+        'crash_reporter.disabled',
+        context: {'reason': 'SENTRY_DSN not set'},
+      );
       return;
     }
 
@@ -29,10 +30,7 @@ class CrashReporter {
 
     FlutterError.onError = (details) {
       FlutterError.presentError(details);
-      Sentry.captureException(
-        details.exception,
-        stackTrace: details.stack,
-      );
+      Sentry.captureException(details.exception, stackTrace: details.stack);
       AppLogger.error(
         'flutter.framework_error',
         error: details.exception,
@@ -42,11 +40,7 @@ class CrashReporter {
 
     PlatformDispatcher.instance.onError = (error, stack) {
       Sentry.captureException(error, stackTrace: stack);
-      AppLogger.error(
-        'platform.async_error',
-        error: error,
-        stackTrace: stack,
-      );
+      AppLogger.error('platform.async_error', error: error, stackTrace: stack);
       return true;
     };
 
@@ -65,11 +59,7 @@ class CrashReporter {
     };
 
     PlatformDispatcher.instance.onError = (error, stack) {
-      AppLogger.error(
-        'platform.async_error',
-        error: error,
-        stackTrace: stack,
-      );
+      AppLogger.error('platform.async_error', error: error, stackTrace: stack);
       return true;
     };
   }
@@ -128,10 +118,7 @@ class CrashReporter {
 
 /// Catches uncaught async errors outside Flutter framework handlers.
 Future<void> runGuarded(Future<void> Function() body) async {
-  await runZonedGuarded(
-    () async => body(),
-    (error, stack) async {
-      await CrashReporter.captureException(error, stackTrace: stack);
-    },
-  );
+  await runZonedGuarded(() async => body(), (error, stack) async {
+    await CrashReporter.captureException(error, stackTrace: stack);
+  });
 }

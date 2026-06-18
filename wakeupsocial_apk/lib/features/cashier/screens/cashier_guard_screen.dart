@@ -45,9 +45,7 @@ class _CashierGuardScreenState extends State<CashierGuardScreen> {
   @override
   Widget build(BuildContext context) {
     if (_checking) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return _authorized ? const CashierScreen() : const SizedBox.shrink();

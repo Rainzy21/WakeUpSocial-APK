@@ -27,10 +27,7 @@ Future<void> main() async {
 
     await CrashReporter.init();
 
-    await Supabase.initialize(
-      url: supabaseUrl,
-      anonKey: supabaseAnonKey,
-    );
+    await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
 
     AppMetrics.recordEvent('app.start');
     AppLogger.info('app.bootstrap_complete');

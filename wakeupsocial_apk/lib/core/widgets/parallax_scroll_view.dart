@@ -93,13 +93,13 @@ class _ParallaxScrollViewState extends State<ParallaxScrollView> {
 class _ParallaxData extends InheritedWidget {
   final double scrollOffset;
 
-  const _ParallaxData({
-    required this.scrollOffset,
-    required super.child,
-  });
+  const _ParallaxData({required this.scrollOffset, required super.child});
 
   static double of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<_ParallaxData>()?.scrollOffset ?? 0;
+    return context
+            .dependOnInheritedWidgetOfExactType<_ParallaxData>()
+            ?.scrollOffset ??
+        0;
   }
 
   @override
@@ -166,15 +166,11 @@ class ParallaxSection extends StatelessWidget {
               top: -parallaxOffset,
               left: 0,
               right: 0,
-              child: SizedBox(
-                height: imageHeight * 1.4,
-                child: child,
-              ),
+              child: SizedBox(height: imageHeight * 1.4, child: child),
             ),
 
             // ─── OVERLAY (teks, gradient, dll) ───────────────
-            if (overlay != null)
-              Positioned.fill(child: overlay!),
+            if (overlay != null) Positioned.fill(child: overlay!),
           ],
         ),
       ),

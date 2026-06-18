@@ -42,9 +42,7 @@ class MenuRepository {
 
         final response = await query.order('name').limit(100);
         return (response as List<dynamic>)
-            .map(
-              (json) => MenuItemModel.fromJson(json as Map<String, dynamic>),
-            )
+            .map((json) => MenuItemModel.fromJson(json as Map<String, dynamic>))
             .toList();
       },
     );
@@ -79,9 +77,7 @@ class MenuRepository {
             .order('name')
             .limit(50);
         return (response as List<dynamic>)
-            .map(
-              (json) => MenuItemModel.fromJson(json as Map<String, dynamic>),
-            )
+            .map((json) => MenuItemModel.fromJson(json as Map<String, dynamic>))
             .toList();
       },
     );

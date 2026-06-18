@@ -88,9 +88,7 @@ class AppRouter {
         return _buildRoute(const CashierGuardScreen());
       default:
         return _buildRoute(
-          const Scaffold(
-            body: Center(child: Text('Page not found')),
-          ),
+          const Scaffold(body: Center(child: Text('Page not found'))),
         );
     }
   }

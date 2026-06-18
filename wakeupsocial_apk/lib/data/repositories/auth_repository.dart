@@ -22,10 +22,7 @@ class AuthRepository {
       action: () => _supabase.auth.signUp(
         email: email,
         password: password,
-        data: {
-          'name': name,
-          'phone': ?phone,
-        },
+        data: {'name': name, 'phone': ?phone},
       ),
     );
   }
@@ -37,10 +34,8 @@ class AuthRepository {
     return ResilientCall.run(
       operation: 'auth.sign_in',
       retryOnFailure: false,
-      action: () => _supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      ),
+      action: () =>
+          _supabase.auth.signInWithPassword(email: email, password: password),
     );
   }
 
@@ -58,7 +53,8 @@ class AuthRepository {
   Future<void> updateFcmToken(String token) {
     return ResilientCall.run(
       operation: 'auth.update_fcm_token',
-      action: () => _supabase.rpc('update_fcm_token', params: {'p_token': token}),
+      action: () =>
+          _supabase.rpc('update_fcm_token', params: {'p_token': token}),
     );
   }
 

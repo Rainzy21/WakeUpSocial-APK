@@ -42,7 +42,11 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
         centerTitle: false,
         leading: IconButton(
           onPressed: () => NavigationHelper.back(context),
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimary,
+            size: 22,
+          ),
         ),
         title: const Text(
           'Help Center / FAQ',
@@ -61,136 +65,136 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               isLoading: _isLoading,
               skeleton: const ContentPageSkeleton(),
               child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Pusat Bantuan (FAQ) Wake Up Social',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pusat Bantuan (FAQ) Wake Up Social',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 20),
+                      SizedBox(height: 20),
 
-                    // ─── 1 ─────────────────────────────────────
-                    Text(
-                      '1. Cara Melakukan Pembayaran',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                      // ─── 1 ─────────────────────────────────────
+                      Text(
+                        '1. Cara Melakukan Pembayaran',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      'Setelah melakukan pemesanan di aplikasi, silakan menuju ke meja kasir. Status pesanan Anda akan otomatis berubah dari Unpaid menjadi Accepted setelah pembayaran dikonfirmasi oleh staf kami.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                        height: 1.6,
+                      SizedBox(height: 6),
+                      Text(
+                        'Setelah melakukan pemesanan di aplikasi, silakan menuju ke meja kasir. Status pesanan Anda akan otomatis berubah dari Unpaid menjadi Accepted setelah pembayaran dikonfirmasi oleh staf kami.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          height: 1.6,
+                        ),
+                        textAlign: TextAlign.justify,
                       ),
-                      textAlign: TextAlign.justify,
-                    ),
-                    SizedBox(height: 18),
+                      SizedBox(height: 18),
 
-                    // ─── 2 ─────────────────────────────────────
-                    Text(
-                      '2. Memantau Pesanan Aktif',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                      // ─── 2 ─────────────────────────────────────
+                      Text(
+                        '2. Memantau Pesanan Aktif',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      'Untuk melihat pesanan yang sedang diproses, Anda dapat menekan ikon pesanan pada Navigation Bar di bagian bawah layar utama.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                        height: 1.6,
+                      SizedBox(height: 6),
+                      Text(
+                        'Untuk melihat pesanan yang sedang diproses, Anda dapat menekan ikon pesanan pada Navigation Bar di bagian bawah layar utama.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          height: 1.6,
+                        ),
+                        textAlign: TextAlign.justify,
                       ),
-                      textAlign: TextAlign.justify,
-                    ),
-                    SizedBox(height: 18),
+                      SizedBox(height: 18),
 
-                    // ─── 3 ─────────────────────────────────────
-                    Text(
-                      '3. Melihat Riwayat Transaksi',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                      // ─── 3 ─────────────────────────────────────
+                      Text(
+                        '3. Melihat Riwayat Transaksi',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      'Daftar pesanan yang telah selesai di masa lalu dapat Anda temukan pada menu Order History yang terletak di dalam halaman Profil.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                        height: 1.6,
+                      SizedBox(height: 6),
+                      Text(
+                        'Daftar pesanan yang telah selesai di masa lalu dapat Anda temukan pada menu Order History yang terletak di dalam halaman Profil.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          height: 1.6,
+                        ),
+                        textAlign: TextAlign.justify,
                       ),
-                      textAlign: TextAlign.justify,
-                    ),
-                    SizedBox(height: 18),
+                      SizedBox(height: 18),
 
-                    // ─── 4 ─────────────────────────────────────
-                    Text(
-                      '4. Perubahan Informasi Akun',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                      // ─── 4 ─────────────────────────────────────
+                      Text(
+                        '4. Perubahan Informasi Akun',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      'Anda dapat memperbarui data diri seperti nama dan email kapan saja melalui fitur Edit Profile agar informasi pada struk digital tetap akurat.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                        height: 1.6,
+                      SizedBox(height: 6),
+                      Text(
+                        'Anda dapat memperbarui data diri seperti nama dan email kapan saja melalui fitur Edit Profile agar informasi pada struk digital tetap akurat.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          height: 1.6,
+                        ),
+                        textAlign: TextAlign.justify,
                       ),
-                      textAlign: TextAlign.justify,
-                    ),
-                    SizedBox(height: 18),
+                      SizedBox(height: 18),
 
-                    // ─── 5 ─────────────────────────────────────
-                    Text(
-                      '5. Bantuan Kendala Teknis',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                      // ─── 5 ─────────────────────────────────────
+                      Text(
+                        '5. Bantuan Kendala Teknis',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      'Jika status pesanan tidak berubah setelah pembayaran atau terdapat kendala lain, silakan tunjukkan layar aplikasi Anda kepada staf Wake Up Social untuk bantuan langsung.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                        height: 1.6,
+                      SizedBox(height: 6),
+                      Text(
+                        'Jika status pesanan tidak berubah setelah pembayaran atau terdapat kendala lain, silakan tunjukkan layar aplikasi Anda kepada staf Wake Up Social untuk bantuan langsung.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          height: 1.6,
+                        ),
+                        textAlign: TextAlign.justify,
                       ),
-                      textAlign: TextAlign.justify,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
           ),
 
           // ─── BOTTOM CTA: Email + WhatsApp ──────────────────
@@ -227,12 +231,17 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                             final Uri emailLaunchUri = Uri(
                               scheme: 'mailto',
                               path: 'support@wakeupsocial.com',
-                              query: 'subject=Bantuan%20Aplikasi%20Wake%20Up%20Social',
+                              query:
+                                  'subject=Bantuan%20Aplikasi%20Wake%20Up%20Social',
                             );
                             if (!await launchUrl(emailLaunchUri)) {
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Tidak dapat membuka aplikasi email')),
+                                  const SnackBar(
+                                    content: Text(
+                                      'Tidak dapat membuka aplikasi email',
+                                    ),
+                                  ),
                                 );
                               }
                             }
@@ -278,10 +287,17 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                             final Uri waLaunchUri = Uri.parse(
                               'https://wa.me/$whatsappNumber?text=Halo%20Admin%20Wake%20Up%20Social',
                             );
-                            if (!await launchUrl(waLaunchUri, mode: LaunchMode.externalApplication)) {
+                            if (!await launchUrl(
+                              waLaunchUri,
+                              mode: LaunchMode.externalApplication,
+                            )) {
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Tidak dapat membuka WhatsApp')),
+                                  const SnackBar(
+                                    content: Text(
+                                      'Tidak dapat membuka WhatsApp',
+                                    ),
+                                  ),
                                 );
                               }
                             }

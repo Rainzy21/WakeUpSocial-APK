@@ -42,7 +42,11 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
         centerTitle: false,
         leading: IconButton(
           onPressed: () => NavigationHelper.back(context),
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimary,
+            size: 22,
+          ),
         ),
         title: const Text(
           'Contact Us',
@@ -57,88 +61,88 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
         isLoading: _isLoading,
         skeleton: const ContentPageSkeleton(),
         child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const SizedBox(height: 8),
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
 
-            // ─── CUSTOMER SUPPORT ────────────────────────────
-            _ShadowCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 4, bottom: 12),
-                    child: Text(
-                      'Costumer Support',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+              // ─── CUSTOMER SUPPORT ────────────────────────────
+              _ShadowCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(left: 4, bottom: 12),
+                      child: Text(
+                        'Costumer Support',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
-                  ),
-                  _ContactItem(
-                    icon: Icons.phone_outlined,
-                    label: 'Contact Number',
-                    value: '+(62) 8123456789',
-                    onTap: () {},
-                  ),
-                  const Divider(height: 1, indent: 56),
-                  _ContactItem(
-                    icon: Icons.mail_outline,
-                    label: 'Email Address',
-                    value: 'Help@gmail.com',
-                    onTap: () {},
-                  ),
-                ],
+                    _ContactItem(
+                      icon: Icons.phone_outlined,
+                      label: 'Contact Number',
+                      value: '+(62) 8123456789',
+                      onTap: () {},
+                    ),
+                    const Divider(height: 1, indent: 56),
+                    _ContactItem(
+                      icon: Icons.mail_outline,
+                      label: 'Email Address',
+                      value: 'Help@gmail.com',
+                      onTap: () {},
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            // ─── SOCIAL MEDIA ────────────────────────────────
-            _ShadowCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 4, bottom: 12),
-                    child: Text(
-                      'Social Media',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+              // ─── SOCIAL MEDIA ────────────────────────────────
+              _ShadowCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(left: 4, bottom: 12),
+                      child: Text(
+                        'Social Media',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
-                  ),
-                  _ContactItem(
-                    icon: Icons.camera_alt_outlined,
-                    label: 'Instagram',
-                    value: 'WakeUp Social',
-                    onTap: () {},
-                  ),
-                  const Divider(height: 1, indent: 56),
-                  _ContactItem(
-                    icon: Icons.close,
-                    label: 'Twitter / X',
-                    value: 'WakeUP Social',
-                    onTap: () {},
-                  ),
-                  const Divider(height: 1, indent: 56),
-                  _ContactItem(
-                    icon: Icons.facebook_outlined,
-                    label: 'Facebook',
-                    value: 'WakeUp Social',
-                    onTap: () {},
-                  ),
-                ],
+                    _ContactItem(
+                      icon: Icons.camera_alt_outlined,
+                      label: 'Instagram',
+                      value: 'WakeUp Social',
+                      onTap: () {},
+                    ),
+                    const Divider(height: 1, indent: 56),
+                    _ContactItem(
+                      icon: Icons.close,
+                      label: 'Twitter / X',
+                      value: 'WakeUP Social',
+                      onTap: () {},
+                    ),
+                    const Divider(height: 1, indent: 56),
+                    _ContactItem(
+                      icon: Icons.facebook_outlined,
+                      label: 'Facebook',
+                      value: 'WakeUp Social',
+                      onTap: () {},
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -185,13 +189,15 @@ class _ContactItemState extends State<_ContactItem> {
             color: _isPressed
                 ? AppColors.surface
                 : _isHovered
-                    ? Colors.grey.withValues(alpha: 0.05)
-                    : Colors.transparent,
+                ? Colors.grey.withValues(alpha: 0.05)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             boxShadow: _isHovered || _isPressed
                 ? [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: _isPressed ? 0.08 : 0.04),
+                      color: Colors.black.withValues(
+                        alpha: _isPressed ? 0.08 : 0.04,
+                      ),
                       blurRadius: _isPressed ? 6 : 10,
                       offset: Offset(0, _isPressed ? 1 : 3),
                     ),
@@ -208,7 +214,11 @@ class _ContactItemState extends State<_ContactItem> {
                   color: AppColors.surface,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(widget.icon, color: AppColors.textSecondary, size: 20),
+                child: Icon(
+                  widget.icon,
+                  color: AppColors.textSecondary,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 14),
 

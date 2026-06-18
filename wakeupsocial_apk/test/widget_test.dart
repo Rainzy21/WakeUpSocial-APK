@@ -108,10 +108,7 @@ void main() {
 
   group('OrderMapExtension', () {
     test('statusV2 and totalAmountInt read blueprint columns', () {
-      final map = {
-        'status_v2': 'CONFIRMED',
-        'total_amount': 55000,
-      };
+      final map = {'status_v2': 'CONFIRMED', 'total_amount': 55000};
 
       expect(map.statusV2, OrderStatusV2.confirmed);
       expect(map.totalAmountInt, 55000);

@@ -41,9 +41,9 @@ class _OrderScreenState extends State<OrderScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal memuat profil: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal memuat profil: $e')));
       }
     }
     if (mounted) {
@@ -72,25 +72,28 @@ class _OrderScreenState extends State<OrderScreen> {
     final cart = context.read<CartProvider>();
     final cartItems = cart.items;
     if (cartItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Keranjang belanja kosong')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Keranjang belanja kosong')));
       return;
     }
 
     if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nama pemesan harus diisi')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Nama pemesan harus diisi')));
       return;
     }
 
     setState(() => _isSubmitting = true);
 
     try {
-      final sessionProvider = Provider.of<SessionProvider>(context, listen: false);
+      final sessionProvider = Provider.of<SessionProvider>(
+        context,
+        listen: false,
+      );
       String? currentSessionId = sessionProvider.sessionId;
-      
+
       // Jembatan untuk kompatibilitas jika tidak scan QR:
       if (currentSessionId == null) {
         // Jika tidak boleh menggunakan anonymous, kita paksa user login dulu
@@ -112,19 +115,27 @@ class _OrderScreenState extends State<OrderScreen> {
         );
       }
 
-      final orderItemsInput = cartItems.map((item) => OrderLineInput(
-        menuItemId: item.menuItemId,
-        quantity: item.quantity,
-      )).toList();
+      final orderItemsInput = cartItems
+          .map(
+            (item) => OrderLineInput(
+              menuItemId: item.menuItemId,
+              quantity: item.quantity,
+            ),
+          )
+          .toList();
 
       final orderMap = await OrderRepository().createOrder(
         sessionId: currentSessionId!,
         items: orderItemsInput,
-        notes: _nameController.text.trim() + (_tableController.text.trim().isNotEmpty ? ' (Meja: ${_tableController.text.trim()})' : ''), 
+        notes:
+            _nameController.text.trim() +
+            (_tableController.text.trim().isNotEmpty
+                ? ' (Meja: ${_tableController.text.trim()})'
+                : ''),
       );
-      
+
       final orderId = orderMap['order_id'] as String;
-      
+
       await cart.clearCart();
       if (mounted) {
         // Pop the current OrderScreen and CartScreen and go tracking
@@ -155,7 +166,11 @@ class _OrderScreenState extends State<OrderScreen> {
         centerTitle: false,
         leading: IconButton(
           onPressed: () => NavigationHelper.back(context),
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 22),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: AppColors.textPrimary,
+            size: 22,
+          ),
         ),
         title: const Text(
           'CHECKOUT',
@@ -169,12 +184,19 @@ class _OrderScreenState extends State<OrderScreen> {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.search, color: AppColors.textPrimary, size: 22),
+            icon: const Icon(
+              Icons.search,
+              color: AppColors.textPrimary,
+              size: 22,
+            ),
           ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: AppColors.divider.withValues(alpha: 0.5)),
+          child: Container(
+            height: 1,
+            color: AppColors.divider.withValues(alpha: 0.5),
+          ),
         ),
       ),
       body: ShimmerLoading(
@@ -267,7 +289,10 @@ class _OrderScreenState extends State<OrderScreen> {
             color: AppColors.textSecondary.withValues(alpha: 0.5),
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
         ),
       ),
     );
@@ -305,29 +330,31 @@ class _OrderScreenState extends State<OrderScreen> {
           const SizedBox(height: 14),
 
           // Item list
-          ...cartItems.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '${item.name}  x${item.quantity}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
+          ...cartItems.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${item.name}  x${item.quantity}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
-                Text(
-                  _formatPrice(item.price * item.quantity),
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
+                  Text(
+                    _formatPrice(item.price * item.quantity),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          )),
+          ),
 
           // Divider
           Container(
@@ -378,12 +405,9 @@ class _OrderScreenState extends State<OrderScreen> {
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: _isSubmitting 
+          child: _isSubmitting
               ? const Center(child: CircularProgressIndicator())
-              : _HoverButton(
-                  label: 'Buat Pesanan',
-                  onTap: _submitOrder,
-                ),
+              : _HoverButton(label: 'Buat Pesanan', onTap: _submitOrder),
         ),
       ),
     );
@@ -430,10 +454,25 @@ class _HoverButtonState extends State<_HoverButton> {
             boxShadow: [
               BoxShadow(
                 color: AppColors.accent.withValues(
-                  alpha: _isPressed ? 0.15 : _isHovered ? 0.25 : 0.1,
+                  alpha: _isPressed
+                      ? 0.15
+                      : _isHovered
+                      ? 0.25
+                      : 0.1,
                 ),
-                blurRadius: _isPressed ? 4 : _isHovered ? 14 : 6,
-                offset: Offset(0, _isPressed ? 1 : _isHovered ? 5 : 2),
+                blurRadius: _isPressed
+                    ? 4
+                    : _isHovered
+                    ? 14
+                    : 6,
+                offset: Offset(
+                  0,
+                  _isPressed
+                      ? 1
+                      : _isHovered
+                      ? 5
+                      : 2,
+                ),
               ),
             ],
           ),
@@ -490,16 +529,19 @@ class _CheckoutSkeleton extends StatelessWidget {
               children: [
                 SkeletonLine(width: 110, height: 14),
                 const SizedBox(height: 16),
-                ...List.generate(3, (_) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SkeletonLine(width: 130, height: 12),
-                      SkeletonLine(width: 70, height: 12),
-                    ],
+                ...List.generate(
+                  3,
+                  (_) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SkeletonLine(width: 130, height: 12),
+                        SkeletonLine(width: 70, height: 12),
+                      ],
+                    ),
                   ),
-                )),
+                ),
                 const SizedBox(height: 4),
                 Container(height: 1, color: const Color(0xFFE8E8E8)),
                 const SizedBox(height: 10),

@@ -103,8 +103,6 @@ class BestSellerSection extends StatelessWidget {
   }
 }
 
-
-
 /// ─── PRODUCT CARD ───────────────────────────────────────────
 /// Kartu produk individual dengan drop shadow + hover/press effect.
 class _ProductCard extends StatefulWidget {
@@ -147,11 +145,30 @@ class _ProductCardState extends State<_ProductCard> {
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(
-                  alpha: _isPressed ? 0.10 : _isHovered ? 0.08 : 0.05,
+                  alpha: _isPressed
+                      ? 0.10
+                      : _isHovered
+                      ? 0.08
+                      : 0.05,
                 ),
-                blurRadius: _isPressed ? 6 : _isHovered ? 16 : 8,
-                offset: Offset(0, _isPressed ? 1 : _isHovered ? 6 : 3),
-                spreadRadius: _isPressed ? 0 : _isHovered ? 1 : 0,
+                blurRadius: _isPressed
+                    ? 6
+                    : _isHovered
+                    ? 16
+                    : 8,
+                offset: Offset(
+                  0,
+                  _isPressed
+                      ? 1
+                      : _isHovered
+                      ? 6
+                      : 3,
+                ),
+                spreadRadius: _isPressed
+                    ? 0
+                    : _isHovered
+                    ? 1
+                    : 0,
               ),
             ],
           ),
@@ -163,7 +180,9 @@ class _ProductCardState extends State<_ProductCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
                 child: Container(
                   height: 110,
                   width: 140,
@@ -178,7 +197,11 @@ class _ProductCardState extends State<_ProductCard> {
                             size: 32,
                           ),
                         )
-                      : Icon(Icons.local_cafe, color: Colors.grey[400], size: 32),
+                      : Icon(
+                          Icons.local_cafe,
+                          color: Colors.grey[400],
+                          size: 32,
+                        ),
                 ),
               ),
 
@@ -220,7 +243,11 @@ class _ProductCardState extends State<_ProductCard> {
                               color: AppColors.primary,
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Icon(Icons.add, color: Colors.white, size: 16),
+                            child: const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                              size: 16,
+                            ),
                           ),
                         ),
                       ],

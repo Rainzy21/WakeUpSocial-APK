@@ -22,22 +22,14 @@ class AppLogger {
     StackTrace? stackTrace,
     Map<String, Object?> context = const {},
   }) {
-    _log(
-      'error',
-      message,
-      {
-        ...context,
-        if (error != null) 'error': error.toString(),
-        if (stackTrace != null) 'stack': stackTrace.toString(),
-      },
-    );
+    _log('error', message, {
+      ...context,
+      if (error != null) 'error': error.toString(),
+      if (stackTrace != null) 'stack': stackTrace.toString(),
+    });
   }
 
-  static void _log(
-    String level,
-    String message,
-    Map<String, Object?> context,
-  ) {
+  static void _log(String level, String message, Map<String, Object?> context) {
     final payload = {
       'ts': DateTime.now().toUtc().toIso8601String(),
       'level': level,

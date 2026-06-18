@@ -45,7 +45,8 @@ class LocalStorageService {
     await prefs.setInt(_tableNumberKey, tableNumber);
   }
 
-  Future<({String? sessionId, String? tableId, int? tableNumber})> loadSession() async {
+  Future<({String? sessionId, String? tableId, int? tableNumber})>
+  loadSession() async {
     final prefs = await _getPrefs;
     return (
       sessionId: prefs.getString(_sessionIdKey),
