@@ -89,7 +89,9 @@ class ResilientCall {
     }
     if (error is AuthRetryableFetchException) return true;
     if (error is StorageException) {
-      final status = error.statusCode;
+      final statusStr = error.statusCode;
+      if (statusStr == null) return true;
+      final status = int.tryParse(statusStr);
       return status == null || status >= 500;
     }
     final message = error.toString().toLowerCase();

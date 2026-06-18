@@ -344,7 +344,7 @@ class _OrderScreenState extends State<OrderScreen> {
                     ),
                   ),
                   Text(
-                    _formatPrice(item.price * item.quantity),
+                    _formatPrice((item.price * item.quantity).toDouble()),
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
