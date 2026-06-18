@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/widgets/shimmer_loading.dart';
-import '../../../routes/navigation_helper.dart';
-import '../../../core/providers/cart_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/providers/cart_provider.dart';
+import '../../../core/providers/session_provider.dart';
+import '../../../data/repositories/order_repository.dart';
+import '../../../data/repositories/wallet_repository.dart';
+import '../../../routes/navigation_helper.dart';
+import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/widgets/page_skeletons.dart';
 
 /// ============================================================
 /// OrderScreen — Halaman checkout / konfirmasi pesanan.
@@ -31,8 +35,12 @@ class OrderScreen extends StatefulWidget {
 class _OrderScreenState extends State<OrderScreen> {
   bool _isLoading = true;
   bool _isCheckingOut = false;
-  final _nameController = TextEditingController();
-  final _tableController = TextEditingController();
+  final _notesController = TextEditingController();
+  final _couponController = TextEditingController();
+  final _orderRepo = OrderRepository();
+  final _walletRepo = WalletRepository();
+  String? _couponId;
+  int? _discountedTotal;
 
   @override
   void initState() {
@@ -44,8 +52,8 @@ class _OrderScreenState extends State<OrderScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _tableController.dispose();
+    _notesController.dispose();
+    _couponController.dispose();
     super.dispose();
   }
 
@@ -103,9 +111,39 @@ class _OrderScreenState extends State<OrderScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ─── NAME ───────────────────────────────────────
+              Consumer<SessionProvider>(
+                builder: (context, session, _) {
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      session.hasActiveSession
+                          ? 'Meja ${session.tableNumber}'
+                          : 'Belum scan QR meja — scan dulu sebelum checkout',
+                      style: TextStyle(
+                        color: session.hasActiveSession
+                            ? AppColors.textPrimary
+                            : Colors.orange.shade800,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              if (!context.watch<SessionProvider>().hasActiveSession) ...[
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => NavigationHelper.toQrScan(context),
+                  child: const Text('Scan QR Meja'),
+                ),
+              ],
+              const SizedBox(height: 20),
               const Text(
-                'Name',
+                'Catatan (opsional)',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -114,14 +152,12 @@ class _OrderScreenState extends State<OrderScreen> {
               ),
               const SizedBox(height: 8),
               _buildInputField(
-                controller: _nameController,
-                hint: 'Enter your name',
+                controller: _notesController,
+                hint: 'Contoh: less sugar',
               ),
               const SizedBox(height: 20),
-
-              // ─── TABLE NUMBER ───────────────────────────────
               const Text(
-                'Table number',
+                'Kode Kupon',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -129,15 +165,23 @@ class _OrderScreenState extends State<OrderScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              _buildInputField(
-                controller: _tableController,
-                hint: 'Table number',
-                keyboardType: TextInputType.number,
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInputField(
+                      controller: _couponController,
+                      hint: 'Masukkan kode',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton(
+                    onPressed: () => _validateCoupon(cart.totalPrice),
+                    child: const Text('Apply'),
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
-
-              // ─── ORDER SUMMARY ──────────────────────────────
-              _buildOrderSummary(_orderItems, _totalPrice),
+              _buildOrderSummary(_orderItems, _discountedTotal ?? _totalPrice),
             ],
           ),
         ),
@@ -301,13 +345,43 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-  Future<void> _submitOrder(CartProvider cart) async {
-    final name = _nameController.text.trim();
-    final tableStr = _tableController.text.trim();
+  Future<void> _validateCoupon(int subtotal) async {
+    final code = _couponController.text.trim();
+    if (code.isEmpty) return;
 
-    if (name.isEmpty || tableStr.isEmpty) {
+    final authed = await NavigationHelper.requireAuth(context);
+    if (!authed || !mounted) return;
+
+    try {
+      final result = await _walletRepo.validateCoupon(code: code, subtotal: subtotal);
+      if (!mounted) return;
+      if (result['valid'] == true) {
+        setState(() {
+          _couponId = result['coupon_id'] as String?;
+          _discountedTotal = (result['discounted_total'] as num?)?.toInt();
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Kupon valid')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Kupon tidak valid')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _submitOrder(CartProvider cart) async {
+    final session = context.read<SessionProvider>();
+    if (!session.hasActiveSession) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nama dan Nomor Meja harus diisi')),
+        const SnackBar(content: Text('Scan QR meja terlebih dahulu')),
       );
       return;
     }
@@ -319,47 +393,38 @@ class _OrderScreenState extends State<OrderScreen> {
       return;
     }
 
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity.contains(ConnectivityResult.none)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Tidak ada koneksi — pesanan membutuhkan internet')),
+      );
+      return;
+    }
+
+    final authed = await NavigationHelper.requireAuth(context);
+    if (!authed || !mounted) return;
+
     setState(() => _isCheckingOut = true);
 
     try {
-      final supabase = Supabase.instance.client;
-      final userId = supabase.auth.currentUser?.id;
+      final idempotencyKey = _orderRepo.generateIdempotencyKey();
+      final result = await _orderRepo.createOrder(
+        sessionId: session.sessionId!,
+        items: cart.items
+            .map((i) => OrderLineInput(menuItemId: i.menuItemId, quantity: i.quantity))
+            .toList(),
+        couponId: _couponId,
+        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        idempotencyKey: idempotencyKey,
+      );
 
-      // 1. Create order
-      final Map<String, dynamic> orderData = {
-        'status': 'pending',
-        'payment_method': 'cash',
-        'payment_status': 'unpaid',
-        'total_price': cart.totalPrice,
-        'table_number': tableStr,
-        'notes': 'Atas nama: $name',
-      };
+      await cart.clearCart();
 
-      // Jika user sudah login, sertakan user_id
-      if (userId != null) {
-        orderData['user_id'] = userId;
-      }
-
-      final orderResponse = await supabase.from('orders').insert(orderData).select().single();
-
-      final orderId = orderResponse['id'];
-
-      // 2. Create order items
-      final orderItemsData = cart.items.map((item) => {
-        'order_id': orderId,
-        'name': item.name,
-        'price': item.price,
-        'quantity': item.quantity,
-      }).toList();
-
-      await supabase.from('order_items').insert(orderItemsData);
-
-      // 3. Clear cart
-      cart.clearCart();
-
-      // 4. Navigate to tracking screen
       if (mounted) {
-        NavigationHelper.toOrderTracking(context, orderId: orderId);
+        NavigationHelper.toOrderTracking(
+          context,
+          orderId: result['order_id'] as String,
+        );
       }
     } catch (e) {
       if (mounted) {

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/widgets/shimmer_loading.dart';
-import '../../../routes/navigation_helper.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/order_status.dart';
+import '../../../core/widgets/shimmer_loading.dart';
+import '../../../data/repositories/order_repository.dart';
+import '../../../routes/navigation_helper.dart';
 
 /// ============================================================
 /// OrderTrackingScreen — Halaman tracking status pesanan.
@@ -31,14 +33,14 @@ class OrderTrackingScreen extends StatefulWidget {
 class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   bool _isLoading = true;
   Map<String, dynamic>? _order;
-
-  /// Status saat ini (0-3): Unpaid, Accepted, In Progress, Ready
-  int _currentStep = 0; 
+  int _currentStep = 0;
+  RealtimeChannel? _channel;
+  final _orderRepo = OrderRepository();
 
   final List<_TrackingStep> _steps = const [
-    _TrackingStep(icon: Icons.check_circle_outline, label: 'Unpaid'),
-    _TrackingStep(icon: Icons.inventory_2_outlined, label: 'Accepted'),
-    _TrackingStep(icon: Icons.coffee_maker_outlined, label: 'In Progress'),
+    _TrackingStep(icon: Icons.hourglass_top, label: 'Submitted'),
+    _TrackingStep(icon: Icons.inventory_2_outlined, label: 'Confirmed'),
+    _TrackingStep(icon: Icons.coffee_maker_outlined, label: 'Preparing'),
     _TrackingStep(icon: Icons.takeout_dining_outlined, label: 'Ready'),
   ];
 
@@ -46,38 +48,46 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   void initState() {
     super.initState();
     _fetchOrder();
+    _channel = Supabase.instance.client
+        .channel('order-${widget.orderId}')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'orders',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'id',
+            value: widget.orderId,
+          ),
+          callback: (payload) {
+            final record = payload.newRecord;
+            _applyOrder(Map<String, dynamic>.from(record));
+          },
+        )
+        .subscribe();
+  }
+
+  @override
+  void dispose() {
+    _channel?.unsubscribe();
+    super.dispose();
+  }
+
+  void _applyOrder(Map<String, dynamic> order) {
+    final status = OrderStatusV2.fromDb(order['status_v2'] as String?);
+    setState(() {
+      _order = order;
+      _currentStep = status.trackingStep;
+      _isLoading = false;
+    });
   }
 
   Future<void> _fetchOrder() async {
     try {
-      final supabase = Supabase.instance.client;
-      final response = await supabase
-          .from('orders')
-          .select()
-          .eq('id', widget.orderId)
-          .single();
-
-      if (mounted) {
-        setState(() {
-          _order = response;
-          _currentStep = _mapStatusToStep(_order!['status']);
-          _isLoading = false;
-        });
-      }
+      final response = await _orderRepo.getOrderById(widget.orderId);
+      if (mounted) _applyOrder(response);
     } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  int _mapStatusToStep(String status) {
-    switch (status) {
-      case 'pending': return 1; // accepted
-      case 'processing': return 2; // in progress
-      case 'ready': return 3; // ready
-      case 'delivered': return 3; // ready
-      default: return 0; // unpaid
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

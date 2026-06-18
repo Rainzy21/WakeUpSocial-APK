@@ -6,7 +6,10 @@ import 'package:provider/provider.dart';
 import '../widgets/menu_category_chips.dart';
 import '../widgets/menu_promo_carousel.dart';
 import '../widgets/menu_item_card.dart';
-import '../widgets/menu_grouped_section.dart';
+import '../../../data/repositories/menu_repository.dart';
+import '../../../data/models/menu_item_model.dart';
+import '../../../core/services/local_storage_service.dart';
+import 'package:intl/intl.dart';
 
 /// ============================================================
 /// MenuScreen — Halaman daftar menu produk (Tab 1 di Bottom Nav).
@@ -34,6 +37,9 @@ class _MenuScreenState extends State<MenuScreen> {
   String _selectedCategory = 'All Menu';
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  final _menuRepo = MenuRepository();
+  List<MenuItemModel> _menuFromApi = [];
+  DateTime? _syncedAt;
 
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0;
@@ -62,6 +68,54 @@ class _MenuScreenState extends State<MenuScreen> {
     _scrollController.addListener(() {
       setState(() => _scrollOffset = _scrollController.offset);
     });
+    _loadMenu();
+  }
+
+  Future<void> _loadMenu() async {
+    try {
+      final items = await _menuRepo.getMenuItems();
+      final syncedAt = DateTime.now();
+      await LocalStorageService().setMenuSyncedAt(syncedAt);
+      if (mounted) {
+        setState(() {
+          _menuFromApi = items;
+          _syncedAt = syncedAt;
+        });
+      }
+    } catch (_) {
+      final saved = await LocalStorageService().getMenuSyncedAt();
+      if (mounted) setState(() => _syncedAt = saved);
+    }
+  }
+
+  List<Map<String, String>> get _displayItems {
+    if (_menuFromApi.isNotEmpty) {
+      return _menuFromApi.map((m) {
+        return {
+          'id': m.id,
+          'name': m.name,
+          'desc': m.description ?? '',
+          'price': _formatPriceLabel(m.priceInt),
+          'imageUrl': m.imageUrl ?? '',
+          'category': _mapCategory(m.categoryName),
+          'subCategory': '',
+        };
+      }).toList();
+    }
+    return _allMenuItems;
+  }
+
+  String _formatPriceLabel(int price) {
+    final fmt = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    return fmt.format(price).replaceAll(',00', '').replaceAll(',0', '');
+  }
+
+  String _mapCategory(String name) {
+    final lower = name.toLowerCase();
+    if (lower.contains('makan')) return 'Makanan';
+    if (lower.contains('minum') || lower.contains('drink')) return 'Minuman';
+    if (lower.contains('snack')) return 'Snack';
+    return name;
   }
 
   @override
@@ -73,7 +127,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
   /// ─── FILTER ────────────────────────────────────────────────
   List<Map<String, String>> _getFilteredItems({String? subCategory}) {
-    return _allMenuItems.where((item) {
+    return _displayItems.where((item) {
       // Filter kategori utama
       if (_selectedCategory != 'All Menu') {
         if (item['category'] != _selectedCategory) return false;
@@ -103,7 +157,8 @@ class _MenuScreenState extends State<MenuScreen> {
 
   void _handleAddToCart(Map<String, String> item) {
     final cart = Provider.of<CartProvider>(context, listen: false);
-    cart.addToCart(
+    cart.addItem(
+      menuItemId: item['id'] ?? item['name']!,
       name: item['name']!,
       price: _parsePrice(item['price']!),
       imageUrl: item['imageUrl'] ?? '',

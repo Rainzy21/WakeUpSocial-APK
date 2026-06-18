@@ -18,4 +18,7 @@ class AppRoutes {
   static const String privacyPolicy = '/privacy-policy';
   static const String helpCenter = '/help-center';
   static const String contactUs = '/contact-us';
+  static const String qrScan = '/qr-scan';
+  static const String wallet = '/wallet';
+  static const String cashier = '/cashier';
 }

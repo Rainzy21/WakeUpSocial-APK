@@ -53,6 +53,11 @@ class AuthRepository {
     );
   }
 
+  /// Updates FCM token on profile.
+  Future<void> updateFcmToken(String token) async {
+    await _supabase.rpc('update_fcm_token', params: {'p_token': token});
+  }
+
   /// Signs out the current user.
   Future<void> signOut() async {
     await _supabase.auth.signOut();

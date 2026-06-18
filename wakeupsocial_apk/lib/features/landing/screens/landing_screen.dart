@@ -77,7 +77,12 @@ class LandingScreen extends StatelessWidget {
           onSeeAll: () => NavigationHelper.toMenu(context),
           onAddToCart: (name, price) {
             final cart = Provider.of<CartProvider>(context, listen: false);
-            cart.addToCart(name: name, price: price, imageUrl: '');
+            cart.addItem(
+              menuItemId: name,
+              name: name,
+              price: price,
+              imageUrl: '',
+            );
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('$name ditambahkan ke keranjang'),
