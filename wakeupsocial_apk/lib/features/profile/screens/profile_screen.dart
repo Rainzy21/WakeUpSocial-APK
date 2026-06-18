@@ -40,7 +40,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        // Optional: Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat profil: $e')),
+        );
       }
     }
   }
@@ -94,6 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ProfileHeader(
                     name: _profile?.name ?? 'Unknown User',
                     email: _profile?.email ?? 'No email',
+                    avatarUrl: _profile?.avatarUrl,
                     onEditTap: () async {
                       // Jika user edit profil, kita refresh setelah kembali
                       await Navigator.pushNamed(context, AppRoutes.editProfile);

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/shimmer_loading.dart';
-import '../../core/widgets/page_skeletons.dart';
 import '../landing/screens/landing_screen.dart';
 import '../menu/screens/menu_screen.dart';
 import '../order/screens/order_history_screen.dart';
@@ -13,12 +11,7 @@ import '../profile/screens/profile_screen.dart';
 ///
 /// Widget ini menjadi "shell" utama setelah user login/masuk.
 /// Menggunakan [IndexedStack] agar state tiap tab tidak hilang
-/// saat berpindah tab.
-///
-/// **Loading Skeleton:**
-/// Saat pertama kali load, menampilkan shimmer skeleton selama
-/// 1.5 detik (simulate data fetching), lalu transisi smooth
-/// ke konten asli menggunakan [AnimatedSwitcher].
+/// saat berpindah tab. Each tab screen manages its own loading state.
 ///
 /// **Tab yang tersedia:**
 /// - Index 0: Home    → [LandingScreen]
@@ -33,14 +26,8 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> {
-  /// Index tab yang sedang aktif (default: 0 = Home).
   int _currentIndex = 0;
 
-  /// Loading state per tab — skeleton ditampilkan saat true.
-  /// Setiap tab memiliki loading state independen.
-  final List<bool> _isLoading = [true, true, true, true];
-
-  /// Daftar halaman untuk setiap tab.
   final List<Widget> _pages = const [
     LandingScreen(),
     MenuScreen(),
@@ -48,59 +35,13 @@ class _MainNavigationState extends State<MainNavigation> {
     ProfileScreen(),
   ];
 
-  /// Daftar skeleton untuk setiap tab.
-  final List<Widget> _skeletons = const [
-    LandingSkeleton(),
-    MenuSkeleton(),
-    OrderHistorySkeleton(),
-    ProfileSkeleton(),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    // Simulate initial data loading untuk semua tab.
-    // Tab 0 (Home) load langsung, tab lain load saat pertama diklik.
-    _loadTab(0);
-  }
-
-  /// Simulate loading data untuk tab tertentu.
-  /// TODO: Ganti dengan fetch data asli dari API.
-  Future<void> _loadTab(int index) async {
-    if (!_isLoading[index]) return; // Already loaded
-
-    // Simulate network delay (800ms - 1500ms random feel)
-    await Future.delayed(Duration(milliseconds: 800 + (index * 200)));
-
-    if (mounted) {
-      setState(() => _isLoading[index] = false);
-    }
-  }
-
-  void _onTabChanged(int index) {
-    setState(() => _currentIndex = index);
-    // Trigger loading jika tab belum pernah di-load
-    if (_isLoading[index]) {
-      _loadTab(index);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // ─── BODY ──────────────────────────────────────────────
       body: IndexedStack(
         index: _currentIndex,
-        children: List.generate(4, (i) {
-          return _TabPage(
-            isLoading: _isLoading[i],
-            skeleton: _skeletons[i],
-            page: _pages[i],
-          );
-        }),
+        children: _pages,
       ),
-
-      // ─── BOTTOM NAVIGATION BAR ────────────────────────────
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -150,7 +91,6 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 
-  /// ─── NAV ITEM BUILDER ───────────────────────────────────────
   Widget _buildNavItem({
     required IconData icon,
     required IconData activeIcon,
@@ -160,7 +100,7 @@ class _MainNavigationState extends State<MainNavigation> {
     final isActive = _currentIndex == index;
 
     return GestureDetector(
-      onTap: () => _onTabChanged(index),
+      onTap: () => setState(() => _currentIndex = index),
       behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -184,29 +124,6 @@ class _MainNavigationState extends State<MainNavigation> {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// ─── TAB PAGE WRAPPER ──────────────────────────────────────
-/// Menampilkan skeleton saat loading, fade ke konten saat selesai.
-class _TabPage extends StatelessWidget {
-  final bool isLoading;
-  final Widget skeleton;
-  final Widget page;
-
-  const _TabPage({
-    required this.isLoading,
-    required this.skeleton,
-    required this.page,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ShimmerLoading(
-      isLoading: isLoading,
-      skeleton: skeleton,
-      child: page,
     );
   }
 }

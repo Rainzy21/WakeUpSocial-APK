@@ -259,7 +259,25 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () async {
-                            final Uri waLaunchUri = Uri.parse('https://wa.me/6281234567890?text=Halo%20Admin%20Wake%20Up%20Social');
+                            const whatsappNumber = String.fromEnvironment(
+                              'SUPPORT_WHATSAPP_NUMBER',
+                            );
+                            if (whatsappNumber.isEmpty) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Nomor WhatsApp belum dikonfigurasi. '
+                                      'Set SUPPORT_WHATSAPP_NUMBER di .env',
+                                    ),
+                                  ),
+                                );
+                              }
+                              return;
+                            }
+                            final Uri waLaunchUri = Uri.parse(
+                              'https://wa.me/$whatsappNumber?text=Halo%20Admin%20Wake%20Up%20Social',
+                            );
                             if (!await launchUrl(waLaunchUri, mode: LaunchMode.externalApplication)) {
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(

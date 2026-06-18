@@ -42,8 +42,13 @@ class _CashierScreenState extends State<CashierScreen> {
     try {
       final orders = await _orderRepo.getCashierQueue();
       if (mounted) setState(() { _orders = orders; _loading = false; });
-    } catch (_) {
-      if (mounted) setState(() => _loading = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat antrian kasir: $e')),
+        );
+      }
     }
   }
 

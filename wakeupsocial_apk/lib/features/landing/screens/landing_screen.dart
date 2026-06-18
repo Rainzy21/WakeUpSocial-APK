@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/providers/cart_provider.dart';
 import '../../../core/widgets/parallax_scroll_view.dart';
 import '../../../routes/navigation_helper.dart';
 import '../widgets/hero_section.dart';
@@ -8,7 +10,6 @@ import '../widgets/best_seller_section.dart';
 import '../widgets/promo_banner.dart';
 import '../../../data/models/menu_item_model.dart';
 import '../../../data/repositories/menu_repository.dart';
-import '../../../core/services/cart_service.dart';
 
 /// ============================================================
 /// LandingScreen — Halaman utama / beranda (Tab 0: Home).
@@ -48,7 +49,12 @@ class _LandingScreenState extends State<LandingScreen> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat best seller: $e')),
+        );
+      }
     }
   }
 
@@ -109,7 +115,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 items: _bestSellers,
                 onSeeAll: () => NavigationHelper.toMenu(context),
                 onAddToCart: (item) {
-                  CartService.instance.addItem(item);
+                  context.read<CartProvider>().addMenuItem(item);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('${item.name} ditambahkan ke keranjang'),

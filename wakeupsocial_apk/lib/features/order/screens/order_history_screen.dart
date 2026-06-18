@@ -12,8 +12,6 @@ import '../../../data/repositories/order_repository.dart';
 /// - AppBar: "← Order History" + search icon
 /// - List card order: icon, nama, jumlah menu, order number,
 ///   tanggal, badge "Selesai", icon receipt
-///
-/// TODO: Ganti mock data dengan data dari API/repository.
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
 

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../routes/navigation_helper.dart';
 import '../widgets/menu_category_chips.dart';
 import '../widgets/menu_promo_carousel.dart';
 import '../widgets/menu_item_card.dart';
-import '../../../core/services/cart_service.dart';
+import '../../../core/providers/cart_provider.dart';
 import '../../../data/models/menu_item_model.dart';
 import '../../../data/models/menu_category_model.dart';
 import '../../../data/repositories/menu_repository.dart';
@@ -96,7 +97,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   void _addToCart(MenuItemModel item) {
-    CartService.instance.addItem(item);
+    context.read<CartProvider>().addMenuItem(item);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${item.name} ditambahkan ke keranjang'),
@@ -188,10 +189,9 @@ class _MenuScreenState extends State<MenuScreen> {
               ),
               tooltip: 'Keranjang',
             ),
-            ListenableBuilder(
-              listenable: CartService.instance,
-              builder: (context, _) {
-                final count = CartService.instance.totalItemCount;
+            Consumer<CartProvider>(
+              builder: (context, cart, _) {
+                final count = cart.totalItemCount;
                 if (count == 0) return const SizedBox.shrink();
                 return Positioned(
                   right: 8,

@@ -25,7 +25,12 @@ class _WalletScreenState extends State<WalletScreen> {
       final wallet = await _walletRepo.getWallet();
       if (mounted) setState(() { _wallet = wallet; _loading = false; });
     } catch (e) {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat wallet: $e')),
+        );
+      }
     }
   }
 

@@ -1,0 +1,11 @@
+# Environment secrets
+.env
+**/.env
+
+# Merge-conflict / temp artifacts
+tmp_*.dart
+
+# Android release signing (never commit)
+key.properties
+*.jks
+*.keystore

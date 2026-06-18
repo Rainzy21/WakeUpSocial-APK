@@ -35,7 +35,6 @@ class HeroSection extends StatelessWidget {
 
   /// ─── BACKGROUND ONLY ──────────────────────────────────────
   /// Mengembalikan hanya gambar background (untuk parallax).
-  /// TODO: Ganti Container placeholder dengan Image.asset(...)
   static Widget backgroundOnly() {
     return Image.network(
       'https://images.unsplash.com/photo-1495474472205-51f33f67950f?auto=format&fit=crop&w=800&q=80',

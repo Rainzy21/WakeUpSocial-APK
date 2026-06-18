@@ -17,8 +17,6 @@ import '../../../data/repositories/order_repository.dart';
 /// - Table number (field readonly)
 /// - Order summary: daftar item + quantity + harga
 /// - Total
-///
-/// TODO: Ganti mock data dengan data asli dari repository.
 class OrderDetailScreen extends StatefulWidget {
   final String orderId;
 

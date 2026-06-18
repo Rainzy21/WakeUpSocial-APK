@@ -10,14 +10,6 @@ import '../../../data/models/user_model.dart';
 /// ============================================================
 /// ProfileDetailScreen — Halaman detail profil (view only).
 /// ============================================================
-///
-/// Sesuai mockup desain:
-/// - AppBar: "← Profile detail" + search icon
-/// - Avatar (lingkaran, placeholder)
-/// - Field readonly: Nama, Email (dengan icon suffix)
-/// - Tombol "Edit Profile" (merah penuh)
-///
-/// TODO: Ganti data statis dengan data dari UserModel.
 class ProfileDetailScreen extends StatefulWidget {
   const ProfileDetailScreen({super.key});
 
@@ -45,8 +37,12 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Failed to load profile: $e');
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat profil: $e')),
+        );
+      }
     }
   }
 

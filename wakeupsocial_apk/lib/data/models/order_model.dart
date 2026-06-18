@@ -137,15 +137,22 @@ class OrderModel {
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     final rawItems = json['order_items'] as List<dynamic>? ?? [];
+    final statusV2 = json['status_v2'] as String?;
+    final legacyStatus = json['status'] as String?;
+    final totalAmount = json['total_amount'] as num?;
+    final legacyTotal = json['total_price'] as num?;
+
     return OrderModel(
       id: json['id'] as String,
       userId: json['user_id'] as String?,
-      status: OrderStatus.fromString(json['status'] as String),
-      paymentMethod:
-          PaymentMethod.fromString(json['payment_method'] as String),
-      paymentStatus:
-          PaymentStatus.fromString(json['payment_status'] as String),
-      totalPrice: (json['total_price'] as num).toDouble(),
+      status: _statusFromJson(statusV2, legacyStatus),
+      paymentMethod: PaymentMethod.fromString(
+        json['payment_method'] as String? ?? 'cash',
+      ),
+      paymentStatus: PaymentStatus.fromString(
+        json['payment_status'] as String? ?? 'unpaid',
+      ),
+      totalPrice: (totalAmount ?? legacyTotal ?? 0).toDouble(),
       notes: json['notes'] as String?,
       tableNumber: json['table_number'] as String?,
       items: rawItems
@@ -156,6 +163,26 @@ class OrderModel {
           ? DateTime.parse(json['updated_at'] as String)
           : null,
     );
+  }
+
+  static OrderStatus _statusFromJson(String? statusV2, String? legacyStatus) {
+    if (statusV2 != null) {
+      switch (statusV2.toUpperCase()) {
+        case 'SUBMITTED':
+          return OrderStatus.pending;
+        case 'REVIEWING':
+        case 'CONFIRMED':
+          return OrderStatus.processing;
+        case 'READY':
+          return OrderStatus.ready;
+        case 'COMPLETED':
+          return OrderStatus.delivered;
+        case 'CANCELLED':
+        case 'EXPIRED':
+          return OrderStatus.cancelled;
+      }
+    }
+    return OrderStatus.fromString(legacyStatus ?? 'pending');
   }
 
   Map<String, dynamic> toJson() {

@@ -88,16 +88,18 @@ class _MenuPromoCarouselState extends State<MenuPromoCarousel> {
         borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
-            // ─── BACKGROUND IMAGE PLACEHOLDER ──────────────
-            // TODO: Ganti dengan Image.asset(slide['image']!)
             Positioned.fill(
-              child: Container(
-                color: Colors.grey[400],
-                child: Center(
-                  child: Icon(
-                    Icons.image_outlined,
-                    color: Colors.grey[500],
-                    size: 40,
+              child: Image.asset(
+                slide['image']!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: Colors.grey[400],
+                  child: Center(
+                    child: Icon(
+                      Icons.image_outlined,
+                      color: Colors.grey[500],
+                      size: 40,
+                    ),
                   ),
                 ),
               ),
@@ -162,8 +164,7 @@ class _MenuPromoCarouselState extends State<MenuPromoCarousel> {
   }
 }
 
-/// Data slides promo.
-/// TODO: Ganti dengan data dari backend/CMS.
+/// Data slides promo (static marketing content).
 final List<Map<String, String>> _promoSlides = [
   {
     'title': 'Latte art',

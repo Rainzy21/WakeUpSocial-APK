@@ -81,6 +81,7 @@ class BestSellerSection extends StatelessWidget {
                 child: _ProductCard(
                   name: p.name,
                   price: strPrice,
+                  imageUrl: p.imageUrl,
                   onAddToCart: () => onAddToCart?.call(p),
                 ),
               );
@@ -109,11 +110,13 @@ class BestSellerSection extends StatelessWidget {
 class _ProductCard extends StatefulWidget {
   final String name;
   final String price;
+  final String? imageUrl;
   final VoidCallback? onAddToCart;
 
   const _ProductCard({
     required this.name,
     required this.price,
+    this.imageUrl,
     this.onAddToCart,
   });
 
@@ -159,15 +162,23 @@ class _ProductCardState extends State<_ProductCard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ─── GAMBAR PLACEHOLDER ────────────────────────────
-              // TODO: Ganti dengan Image.asset('assets/images/...')
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                 child: Container(
                   height: 110,
                   width: 140,
                   color: Colors.grey[200],
-                  child: Icon(Icons.local_cafe, color: Colors.grey[400], size: 32),
+                  child: widget.imageUrl != null && widget.imageUrl!.isNotEmpty
+                      ? Image.network(
+                          widget.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.local_cafe,
+                            color: Colors.grey[400],
+                            size: 32,
+                          ),
+                        )
+                      : Icon(Icons.local_cafe, color: Colors.grey[400], size: 32),
                 ),
               ),
 

@@ -15,25 +15,33 @@ jobs:
         working-directory: ./wakeupsocial_apk
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - uses: subosito/flutter-action@v2
       with:
         channel: 'stable'
-        
+        cache: true
+
     - name: Install dependencies
       run: flutter pub get
 
     - name: Verify formatting
       run: dart format --output=none --set-exit-if-changed .
-      continue-on-error: true
 
     - name: Analyze project source
       run: flutter analyze
-      continue-on-error: true
+
+    - name: Audit dependencies
+      run: dart pub audit
 
     - name: Run tests
-      run: flutter test || echo "No tests found"
+      run: flutter test
+      env:
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
-    - name: Build APK
-      run: flutter build apk --split-per-abi
+    - name: Build APK (debug)
+      run: |
+        flutter build apk --debug \
+          --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+          --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}

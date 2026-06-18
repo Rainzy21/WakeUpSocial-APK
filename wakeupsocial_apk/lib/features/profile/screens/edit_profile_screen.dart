@@ -16,8 +16,6 @@ import '../../../data/repositories/profile_repository.dart';
 /// - Form fields: first Name, Last Name, Email
 ///   (masing-masing dengan icon suffix di kanan)
 /// - Tombol "Confirm edit" (merah penuh)
-///
-/// TODO: Hubungkan ke backend untuk menyimpan perubahan.
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
 

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../services/local_storage_service.dart';
+import '../../data/models/menu_item_model.dart';
 
 class CartItem {
   final String menuItemId;
@@ -55,6 +56,8 @@ class CartProvider extends ChangeNotifier {
 
   int get totalPrice => _items.fold(0, (sum, item) => sum + item.subtotal);
 
+  int get totalItemCount => _items.fold(0, (sum, item) => sum + item.quantity);
+
   Future<void> _restore() async {
     final saved = await _storage.loadCart();
     _items
@@ -65,6 +68,15 @@ class CartProvider extends ChangeNotifier {
 
   Future<void> _persist() async {
     await _storage.saveCart(_items.map((e) => e.toJson()).toList());
+  }
+
+  Future<void> addMenuItem(MenuItemModel item) async {
+    await addItem(
+      menuItemId: item.id,
+      name: item.name,
+      price: item.priceInt,
+      imageUrl: item.imageUrl ?? '',
+    );
   }
 
   Future<void> addItem({

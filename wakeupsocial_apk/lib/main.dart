@@ -5,37 +5,48 @@ import 'core/themes/app_theme.dart';
 import 'core/providers/cart_provider.dart';
 import 'core/providers/session_provider.dart';
 import 'core/services/local_storage_service.dart';
+import 'core/observability/app_logger.dart';
+import 'core/observability/app_metrics.dart';
+import 'core/observability/crash_reporter.dart';
 import 'routes/app_routes.dart';
 import 'routes/app_router.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+Future<void> main() async {
+  await runGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  const supabaseUrl = String.fromEnvironment(
-    'SUPABASE_URL',
-    defaultValue: 'https://cnndakhlbpewqmsxmqsi.supabase.co',
-  );
-  const supabaseAnonKey = String.fromEnvironment(
-    'SUPABASE_ANON_KEY',
-    defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNubmRha2hsYnBld3Ftc3htcXNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExNzY0NTAsImV4cCI6MjA5Njc1MjQ1MH0.ow8P4bS2K5wH3lryt8eN1IaP0-IeEn6PZF6es9QpKJo',
-  );
+    const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+    const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
-  await Supabase.initialize(
-    url: supabaseUrl,
-    anonKey: supabaseAnonKey,
-  );
+    if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
+      throw StateError(
+        'SUPABASE_URL and SUPABASE_ANON_KEY must be provided via '
+        '--dart-define or --dart-define-from-file=.env',
+      );
+    }
 
-  final storage = LocalStorageService();
+    await CrashReporter.init();
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => SessionProvider(storage)),
-        ChangeNotifierProvider(create: (_) => CartProvider(storage)),
-      ],
-      child: const WakeUpSocialApp(),
-    ),
-  );
+    await Supabase.initialize(
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
+    );
+
+    AppMetrics.recordEvent('app.start');
+    AppLogger.info('app.bootstrap_complete');
+
+    final storage = LocalStorageService();
+
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => SessionProvider(storage)),
+          ChangeNotifierProvider(create: (_) => CartProvider(storage)),
+        ],
+        child: const WakeUpSocialApp(),
+      ),
+    );
+  });
 }
 
 final supabase = Supabase.instance.client;
@@ -51,7 +62,6 @@ class WakeUpSocialApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
-      // Guest browse: always start at home; login deferred to checkout.
       initialRoute: AppRoutes.home,
       onGenerateRoute: AppRouter.generateRoute,
     );

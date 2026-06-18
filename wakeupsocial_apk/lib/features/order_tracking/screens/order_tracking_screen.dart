@@ -10,18 +10,6 @@ import '../../../routes/navigation_helper.dart';
 /// ============================================================
 /// OrderTrackingScreen — Halaman tracking status pesanan.
 /// ============================================================
-///
-/// Sesuai mockup desain:
-/// - AppBar: logo "Wake Up Social" + search
-/// - Order # + estimated arrival time
-/// - Delivery Status card dengan step indicator:
-///   Unpaid → Accepted → In Progress → Ready
-/// - Info summary: Nama, No table, Total
-///
-/// **Navigasi:**
-/// - Back → kembali ke halaman sebelumnya
-///
-/// TODO: Ganti mock data dengan data real-time dari backend.
 class OrderTrackingScreen extends StatefulWidget {
   final String orderId;
 
@@ -100,8 +88,31 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       final response = await _orderRepo.getOrderById(widget.orderId);
       if (mounted) _applyOrder(response);
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat pesanan: $e')),
+        );
+      }
     }
+  }
+
+  String _etaSubtitle() {
+    if (_order == null) return 'Memuat estimasi waktu...';
+
+    final status = OrderStatusV2.fromDb(_order!['status_v2'] as String?);
+    final createdAt = _order!['created_at'] != null
+        ? DateTime.tryParse(_order!['created_at'] as String)
+        : null;
+    final updatedAt = _order!['updated_at'] != null
+        ? DateTime.tryParse(_order!['updated_at'] as String)
+        : null;
+
+    return orderTrackingEtaMessage(
+      status: status,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
   }
 
   @override
@@ -162,7 +173,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Estimated arrival in 12-15 minutes',
+                _etaSubtitle(),
                 style: TextStyle(
                   fontSize: 13,
                   color: AppColors.textSecondary,
