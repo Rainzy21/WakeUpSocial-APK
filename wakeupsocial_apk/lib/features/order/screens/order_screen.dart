@@ -4,11 +4,11 @@ import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/widgets/page_skeletons.dart';
 import '../../../routes/navigation_helper.dart';
 import '../../../core/services/cart_service.dart';
-import '../../../data/models/order_model.dart';
 import '../../../data/repositories/order_repository.dart';
 import '../../../data/repositories/auth_repository.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/session_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// ============================================================
 /// OrderScreen — Halaman checkout / konfirmasi pesanan.
@@ -38,7 +38,9 @@ class _OrderScreenState extends State<OrderScreen> {
       if (profile != null && mounted) {
         _nameController.text = profile.name;
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Failed to load profile: $e');
+    }
     if (mounted) {
       setState(() => _isLoading = false);
     }
@@ -83,20 +85,52 @@ class _OrderScreenState extends State<OrderScreen> {
 
     try {
       final sessionProvider = Provider.of<SessionProvider>(context, listen: false);
-      final sessionId = sessionProvider.sessionId ?? 'default-session';
+      String? currentSessionId = sessionProvider.sessionId;
       
+      // Jembatan untuk kompatibilitas jika tidak scan QR:
+      if (currentSessionId == null) {
+        // Jika tidak boleh menggunakan anonymous, kita paksa user login dulu
+        final isLoggedIn = await NavigationHelper.requireAuth(context);
+        if (!isLoggedIn) {
+          setState(() => _isSubmitting = false);
+          return;
+        }
+
+        final tNum = int.tryParse(_tableController.text.trim()) ?? 1;
+        final tables = await Supabase.instance.client
+            .from('restaurant_tables')
+            .select('id')
+            .eq('table_number', tNum)
+            .limit(1);
+            
+        if (tables.isNotEmpty) {
+           final tableId = tables.first['id'];
+           final sessionResp = await Supabase.instance.client
+               .rpc('create_session', params: {'p_table_id': tableId});
+           currentSessionId = sessionResp['id'];
+           // Simpan ke provider agar tidak buat sesi berulang kali
+           await sessionProvider.setSession(
+             sessionId: currentSessionId as String,
+             tableId: tableId as String,
+             tableNumber: tNum,
+           );
+        } else {
+           throw Exception('Meja $tNum tidak terdaftar di sistem. Coba meja 1-5.');
+        }
+      }
+
       final orderItemsInput = cartItems.map((item) => OrderLineInput(
         menuItemId: item.menuItem.id,
         quantity: item.quantity,
       )).toList();
 
       final orderMap = await OrderRepository().createOrder(
-        sessionId: sessionId,
+        sessionId: currentSessionId!,
         items: orderItemsInput,
         notes: _nameController.text.trim() + (_tableController.text.trim().isNotEmpty ? ' (Meja: ${_tableController.text.trim()})' : ''), 
       );
       
-      final orderId = orderMap['id'] as String;
+      final orderId = orderMap['order_id'] as String;
       
       CartService.instance.clearCart();
       if (mounted) {
@@ -105,10 +139,16 @@ class _OrderScreenState extends State<OrderScreen> {
         NavigationHelper.toOrderTracking(context, orderId: orderId);
       }
     } catch (e) {
+      debugPrint('=== ORDER ERROR ===');
+      debugPrint('Gagal membuat pesanan: $e');
+      debugPrint('===================');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal membuat pesanan: $e')),
+          SnackBar(content: Text('Gagal: $e'), backgroundColor: Colors.red),
         );
+      }
+    } finally {
+      if (mounted) {
         setState(() => _isSubmitting = false);
       }
     }

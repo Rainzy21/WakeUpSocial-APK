@@ -33,7 +33,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   Future<void> _fetchOrders() async {
     try {
-      final orders = await OrderRepository().getMyOrders();
+      final orderMaps = await OrderRepository().getMyOrders();
+      final orders = orderMaps.map((m) => OrderModel.fromJson(m)).toList();
       if (mounted) {
         setState(() {
           _orders = orders;

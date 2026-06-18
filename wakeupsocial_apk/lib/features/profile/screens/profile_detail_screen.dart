@@ -4,6 +4,8 @@ import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/widgets/page_skeletons.dart';
 import '../../../routes/app_routes.dart';
 import '../../../routes/navigation_helper.dart';
+import '../../../data/repositories/auth_repository.dart';
+import '../../../data/models/user_model.dart';
 
 /// ============================================================
 /// ProfileDetailScreen — Halaman detail profil (view only).
@@ -24,14 +26,28 @@ class ProfileDetailScreen extends StatefulWidget {
 }
 
 class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
+  UserModel? _profile;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 800), () {
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final profile = await AuthRepository().getProfile();
+      if (mounted) {
+        setState(() {
+          _profile = profile;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Failed to load profile: $e');
       if (mounted) setState(() => _isLoading = false);
-    });
+    }
   }
 
   @override
@@ -115,7 +131,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             ),
             const SizedBox(height: 8),
             _buildReadonlyField(
-              value: 'Example',
+              value: _profile?.name ?? '-',
               icon: Icons.person_outline,
             ),
             const SizedBox(height: 20),
@@ -131,7 +147,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             ),
             const SizedBox(height: 8),
             _buildReadonlyField(
-              value: 'Example@gmail.com',
+              value: _profile?.email ?? '-',
               icon: Icons.mail_outline,
             ),
             const SizedBox(height: 32),

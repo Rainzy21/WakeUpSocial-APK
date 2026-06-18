@@ -28,7 +28,7 @@ class OrderRepository {
       'p_notes': notes,
     });
 
-    return Map<String, dynamic>.from(result as Map);
+    return Map<String, dynamic>.from(result as Map? ?? {});
   }
 
   Future<Map<String, dynamic>> cancelOrder(String orderId) async {
@@ -36,7 +36,7 @@ class OrderRepository {
       'cancel_order',
       params: {'p_order_id': orderId},
     );
-    return Map<String, dynamic>.from(result as Map);
+    return Map<String, dynamic>.from(result as Map? ?? {});
   }
 
   Future<Map<String, dynamic>> reviewOrder(String orderId) async {
@@ -44,7 +44,7 @@ class OrderRepository {
       'review_order',
       params: {'p_order_id': orderId},
     );
-    return Map<String, dynamic>.from(result as Map);
+    return Map<String, dynamic>.from(result as Map? ?? {});
   }
 
   Future<Map<String, dynamic>> confirmOrder(String orderId) async {
@@ -52,7 +52,7 @@ class OrderRepository {
       'confirm_order',
       params: {'p_order_id': orderId},
     );
-    return Map<String, dynamic>.from(result as Map);
+    return Map<String, dynamic>.from(result as Map? ?? {});
   }
 
   Future<Map<String, dynamic>> markOrderReady(String orderId) async {
@@ -60,7 +60,7 @@ class OrderRepository {
       'mark_order_ready',
       params: {'p_order_id': orderId},
     );
-    return Map<String, dynamic>.from(result as Map);
+    return Map<String, dynamic>.from(result as Map? ?? {});
   }
 
   Future<Map<String, dynamic>> completeOrder(String orderId) async {
@@ -68,7 +68,7 @@ class OrderRepository {
       'complete_order',
       params: {'p_order_id': orderId},
     );
-    return Map<String, dynamic>.from(result as Map);
+    return Map<String, dynamic>.from(result as Map? ?? {});
   }
 
   Future<List<Map<String, dynamic>>> getCashierQueue() async {
@@ -94,7 +94,8 @@ class OrderRepository {
     final response = await _supabase
         .from('orders')
         .select('*, order_items(*)')
-        .order('created_at', ascending: false);
+        .order('created_at', ascending: false)
+        .limit(20);
     return (response as List).cast<Map<String, dynamic>>();
   }
 

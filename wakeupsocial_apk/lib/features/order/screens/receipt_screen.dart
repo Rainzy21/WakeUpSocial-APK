@@ -28,7 +28,8 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
   Future<void> _fetchOrder() async {
     try {
-      final order = await OrderRepository().getOrderById(widget.orderId);
+      final orderMap = await OrderRepository().getOrderById(widget.orderId);
+      final order = OrderModel.fromJson(orderMap);
       if (mounted) {
         setState(() {
           _order = order;

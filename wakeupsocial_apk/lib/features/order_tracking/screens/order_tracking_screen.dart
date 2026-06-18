@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_colors.dart';
@@ -35,6 +36,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   Map<String, dynamic>? _order;
   int _currentStep = 0;
   RealtimeChannel? _channel;
+  Timer? _receiptTimer;
   final _orderRepo = OrderRepository();
 
   final List<_TrackingStep> _steps = const [
@@ -70,11 +72,22 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   @override
   void dispose() {
     _channel?.unsubscribe();
+    _receiptTimer?.cancel();
     super.dispose();
   }
 
   void _applyOrder(Map<String, dynamic> order) {
     final status = OrderStatusV2.fromDb(order['status_v2'] as String?);
+    
+    if (status == OrderStatusV2.completed && mounted) {
+      _receiptTimer?.cancel();
+      _receiptTimer = Timer(const Duration(milliseconds: 600), () {
+        if (mounted) {
+          NavigationHelper.toReceipt(context, orderId: widget.orderId);
+        }
+      });
+    }
+
     setState(() {
       _order = order;
       _currentStep = status.trackingStep;
@@ -321,9 +334,10 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
 
   String _getStatusLabel() {
     switch (widget.currentStep) {
-      case 0: return 'UNPAID';
-      case 1: return 'ACCEPTED';
-      case 2: return 'IN PROGRESS';
+      case -1: return 'CANCELLED/EXPIRED';
+      case 0: return 'SUBMITTED';
+      case 1: return 'CONFIRMED';
+      case 2: return 'PREPARING';
       case 3: return 'READY';
       default: return 'UNKNOWN';
     }

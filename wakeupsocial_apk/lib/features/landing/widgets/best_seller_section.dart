@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../data/models/menu_item_model.dart';
 
 /// ============================================================
 /// BestSellerSection — Section produk best seller (horizontal scroll).
@@ -12,18 +13,18 @@ import '../../../core/constants/app_colors.dart';
 /// - Hover kartu → shadow membesar + sedikit lift.
 /// - Press kartu → shadow lebih dalam + scale mengecil.
 ///
-/// **Data Source:**
-/// Saat ini menggunakan mock data statis [_mockProducts].
-/// TODO: Ganti dengan data dari repository/API.
 class BestSellerSection extends StatelessWidget {
+  final List<MenuItemModel> items;
+
   /// Callback ketika tombol "See All >" ditekan.
   final VoidCallback? onSeeAll;
 
   /// Callback ketika tombol "+" pada produk ditekan.
-  final void Function(String name, int price)? onAddToCart;
+  final void Function(MenuItemModel item)? onAddToCart;
 
   const BestSellerSection({
     super.key,
+    required this.items,
     this.onSeeAll,
     this.onAddToCart,
   });
@@ -69,17 +70,18 @@ class BestSellerSection extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _mockProducts.length,
+            itemCount: items.length,
             itemBuilder: (context, index) {
-              final p = _mockProducts[index];
+              final p = items[index];
+              final strPrice = _formatPrice(p.price);
               return Padding(
                 padding: EdgeInsets.only(
-                  right: index < _mockProducts.length - 1 ? 12 : 0,
+                  right: index < items.length - 1 ? 12 : 0,
                 ),
                 child: _ProductCard(
-                  name: p['name'] as String,
-                  price: p['priceStr'] as String,
-                  onAddToCart: () => onAddToCart?.call(p['name'] as String, p['price'] as int),
+                  name: p.name,
+                  price: strPrice,
+                  onAddToCart: () => onAddToCart?.call(p),
                 ),
               );
             },
@@ -88,16 +90,19 @@ class BestSellerSection extends StatelessWidget {
       ],
     );
   }
+
+  String _formatPrice(double price) {
+    final str = price.toInt().toString().split('').reversed.join('');
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && i % 3 == 0) buffer.write('.');
+      buffer.write(str[i]);
+    }
+    return 'Rp ${buffer.toString().split('').reversed.join('')}';
+  }
 }
 
-/// Mock data produk best seller.
-/// TODO: Ganti dengan data dari repository/API.
-final List<Map<String, dynamic>> _mockProducts = [
-  {'name': 'Flat White', 'priceStr': 'Rp 25.000', 'price': 25000},
-  {'name': 'Nitro Cold Brew', 'priceStr': 'Rp 23.000', 'price': 23000},
-  {'name': 'Long Black', 'priceStr': 'Rp 23.000', 'price': 23000},
-  {'name': 'Iced Mocha', 'priceStr': 'Rp 28.000', 'price': 28000},
-];
+
 
 /// ─── PRODUCT CARD ───────────────────────────────────────────
 /// Kartu produk individual dengan drop shadow + hover/press effect.

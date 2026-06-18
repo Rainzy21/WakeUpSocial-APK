@@ -41,6 +41,7 @@ enum OrderStatusV2 {
   int get trackingStep {
     switch (this) {
       case OrderStatusV2.submitted:
+        return 0;
       case OrderStatusV2.reviewing:
         return 1;
       case OrderStatusV2.confirmed:
@@ -50,7 +51,7 @@ enum OrderStatusV2 {
         return 3;
       case OrderStatusV2.cancelled:
       case OrderStatusV2.expired:
-        return 0;
+        return -1;
     }
   }
 }

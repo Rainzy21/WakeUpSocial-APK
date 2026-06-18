@@ -3,6 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/widgets/page_skeletons.dart';
 import '../../../routes/navigation_helper.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// ============================================================
 /// HelpCenterScreen — Halaman Pusat Bantuan & FAQ.
@@ -222,8 +223,19 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                       // Email button (outlined)
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () {
-                            // TODO: Open email client
+                          onPressed: () async {
+                            final Uri emailLaunchUri = Uri(
+                              scheme: 'mailto',
+                              path: 'support@wakeupsocial.com',
+                              query: 'subject=Bantuan%20Aplikasi%20Wake%20Up%20Social',
+                            );
+                            if (!await launchUrl(emailLaunchUri)) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Tidak dapat membuka aplikasi email')),
+                                );
+                              }
+                            }
                           },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.textPrimary,
@@ -246,8 +258,15 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                       // WhatsApp button (filled)
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () {
-                            // TODO: Open WhatsApp deep link
+                          onPressed: () async {
+                            final Uri waLaunchUri = Uri.parse('https://wa.me/6281234567890?text=Halo%20Admin%20Wake%20Up%20Social');
+                            if (!await launchUrl(waLaunchUri, mode: LaunchMode.externalApplication)) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Tidak dapat membuka WhatsApp')),
+                                );
+                              }
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.accent,

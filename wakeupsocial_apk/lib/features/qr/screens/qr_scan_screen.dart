@@ -86,7 +86,7 @@ class _ManualQrEntry extends StatefulWidget {
 }
 
 class _ManualQrEntryState extends State<_ManualQrEntry> {
-  final _controller = TextEditingController(text: 'WUS-TABLE-001');
+  final _controller = TextEditingController();
 
   @override
   void dispose() {

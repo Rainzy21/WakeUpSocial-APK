@@ -33,7 +33,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleSignIn() async {
     final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+    final password = _passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -170,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
-                      'Or Sign Up With',
+                      'Or Sign In With',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
@@ -186,8 +186,6 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _buildSocialButton(Icons.facebook, 'Facebook', () {}),
-                  const SizedBox(width: 12),
                   _buildSocialButton(Icons.g_mobiledata, 'Google', _handleGoogleSignIn),
                 ],
               ),
