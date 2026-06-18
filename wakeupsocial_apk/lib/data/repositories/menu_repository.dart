@@ -26,14 +26,13 @@ class MenuRepository {
     var query = _supabase
         .from('menu_items')
         .select('*, menu_categories(id, name, description)')
-        .eq('is_available', true)
-        .order('name');
+        .eq('is_available', true);
 
     if (categoryId != null) {
       query = query.eq('category_id', categoryId);
     }
 
-    final response = await query;
+    final response = await query.order('name');
 
     return (response as List<dynamic>)
         .map((json) => MenuItemModel.fromJson(json as Map<String, dynamic>))

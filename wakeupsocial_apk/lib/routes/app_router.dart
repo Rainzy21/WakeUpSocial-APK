@@ -21,6 +21,7 @@ import '../features/cart/screens/cart_screen.dart';
 import '../features/order/screens/order_screen.dart';
 import '../features/order/screens/order_detail_screen.dart';
 import '../features/order/screens/order_history_screen.dart';
+import '../features/order/screens/receipt_screen.dart';
 
 // Order Tracking
 import '../features/order_tracking/screens/order_tracking_screen.dart';
@@ -61,6 +62,9 @@ class AppRouter {
       case AppRoutes.orderTracking:
         final orderId = settings.arguments as String;
         return _buildRoute(OrderTrackingScreen(orderId: orderId));
+      case AppRoutes.receipt:
+        final orderId = settings.arguments as String;
+        return _buildRoute(ReceiptScreen(orderId: orderId));
       case AppRoutes.profile:
         return _buildRoute(const ProfileScreen());
       case AppRoutes.profileDetail:

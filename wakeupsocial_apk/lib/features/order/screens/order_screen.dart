@@ -3,22 +3,14 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/widgets/page_skeletons.dart';
 import '../../../routes/navigation_helper.dart';
+import '../../../core/services/cart_service.dart';
+import '../../../data/models/order_model.dart';
+import '../../../data/repositories/order_repository.dart';
+import '../../../data/repositories/auth_repository.dart';
 
 /// ============================================================
 /// OrderScreen — Halaman checkout / konfirmasi pesanan.
 /// ============================================================
-///
-/// Sesuai mockup desain:
-/// - AppBar: "← CHECKOUT" + search icon
-/// - Input field: Name, Table number
-/// - Order summary card: daftar item + total
-/// - Bottom: tombol "Buat Pesanan"
-///
-/// **Navigasi:**
-/// - Back → CartScreen
-/// - "Buat Pesanan" → OrderTrackingScreen
-///
-/// TODO: Ganti mock data dengan data dari cart repository.
 class OrderScreen extends StatefulWidget {
   const OrderScreen({super.key});
 
@@ -28,18 +20,26 @@ class OrderScreen extends StatefulWidget {
 
 class _OrderScreenState extends State<OrderScreen> {
   bool _isLoading = true;
+  bool _isSubmitting = false;
   final _nameController = TextEditingController();
   final _tableController = TextEditingController();
-
-  /// Mock order items — TODO: Ambil dari cart state
-  final List<Map<String, dynamic>> _orderItems = [];
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) setState(() => _isLoading = false);
-    });
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    try {
+      final profile = await AuthRepository().getProfile();
+      if (profile != null && mounted) {
+        _nameController.text = profile.name;
+      }
+    } catch (_) {}
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -49,17 +49,58 @@ class _OrderScreenState extends State<OrderScreen> {
     super.dispose();
   }
 
-  int get _totalPrice =>
-      _orderItems.fold(0, (sum, item) => sum + (item['price'] as int) * (item['qty'] as int));
+  double get _totalPrice => CartService.instance.totalPrice.toDouble();
 
-  String _formatPrice(int price) {
-    final str = price.toString();
+  String _formatPrice(double price) {
+    final str = price.toInt().toString().split('').reversed.join('');
     final buffer = StringBuffer();
     for (int i = 0; i < str.length; i++) {
-      if (i > 0 && (str.length - i) % 3 == 0) buffer.write('.');
+      if (i > 0 && i % 3 == 0) buffer.write('.');
       buffer.write(str[i]);
     }
-    return 'Rp $buffer';
+    return 'Rp ${buffer.toString().split('').reversed.join('')}';
+  }
+
+  Future<void> _submitOrder() async {
+    final cartItems = CartService.instance.items;
+    if (cartItems.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Keranjang belanja kosong')),
+      );
+      return;
+    }
+
+    if (_nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nama pemesan harus diisi')),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      final order = await OrderRepository().createOrder(
+        cartItems: cartItems,
+        paymentMethod: PaymentMethod.cash,
+        tableNumber: _tableController.text.trim().isEmpty ? null : _tableController.text.trim(),
+        notes: _nameController.text.trim(), 
+      );
+      
+      CartService.instance.clearCart();
+      if (mounted) {
+        // Pop the current OrderScreen and CartScreen and go tracking
+        Navigator.popUntil(context, (route) => route.isFirst); // back to home
+        NavigationHelper.toOrderTracking(context, orderId: order.id);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal membuat pesanan: $e')),
+        );
+        setState(() => _isSubmitting = false);
+      }
+    }
   }
 
   @override
@@ -219,20 +260,20 @@ class _OrderScreenState extends State<OrderScreen> {
           const SizedBox(height: 14),
 
           // Item list
-          ..._orderItems.map((item) => Padding(
+          ...CartService.instance.items.map((item) => Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${item['name']}  x${item['qty']}',
+                  '${item.menuItem.name}  x${item.quantity}',
                   style: TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
                   ),
                 ),
                 Text(
-                  _formatPrice(item['price'] * item['qty']),
+                  _formatPrice(item.menuItem.price * item.quantity),
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -292,13 +333,12 @@ class _OrderScreenState extends State<OrderScreen> {
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: _HoverButton(
-            label: 'Buat Pesanan',
-            onTap: () {
-              // TODO: Kirim order ke backend
-              NavigationHelper.toOrderTracking(context, orderId: '77421');
-            },
-          ),
+          child: _isSubmitting 
+              ? const Center(child: CircularProgressIndicator())
+              : _HoverButton(
+                  label: 'Buat Pesanan',
+                  onTap: _submitOrder,
+                ),
         ),
       ),
     );

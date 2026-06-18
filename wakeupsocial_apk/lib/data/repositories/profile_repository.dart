@@ -11,14 +11,38 @@ class ProfileRepository {
     final authUser = _supabase.auth.currentUser;
     if (authUser == null) return null;
 
-    final response = await _supabase
-        .from('profiles')
-        .select()
-        .eq('id', authUser.id)
-        .single();
+    try {
+      final response = await _supabase
+          .from('profiles')
+          .select()
+          .eq('id', authUser.id)
+          .single();
 
-    return UserModel.fromJson(response as Map<String, dynamic>,
-        email: authUser.email);
+      return UserModel.fromJson(response as Map<String, dynamic>,
+          email: authUser.email);
+    } catch (e) {
+      // PGRST116 means JSON object requested, multiple (or no) rows returned.
+      // In `.single()` context, it usually means no row was found.
+      if (e is PostgrestException && e.code == 'PGRST116') {
+        // Fallback: Create the profile if it doesn't exist
+        final name = authUser.userMetadata?['name'] ?? authUser.email?.split('@').first ?? 'Unknown User';
+        
+        final newProfile = await _supabase
+            .from('profiles')
+            .insert({
+              'id': authUser.id,
+              'name': name,
+              'phone': authUser.userMetadata?['phone'],
+              'avatar_url': authUser.userMetadata?['avatar_url'],
+            })
+            .select()
+            .single();
+
+        return UserModel.fromJson(newProfile as Map<String, dynamic>,
+            email: authUser.email);
+      }
+      rethrow;
+    }
   }
 
   /// Updates the profile of the currently logged-in user.

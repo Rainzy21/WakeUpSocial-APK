@@ -70,13 +70,18 @@ class FeatureCardsSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        // TODO: Ganti placeholder dengan gambar asli
-        // Path: assets/images/morning_curator.png
+        // Menggunakan Opsi 2 (API Eksternal / Image URL) untuk testing
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: _buildImagePlaceholder(
+          child: Image.network(
+            'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=400&q=80',
             height: 100,
-            label: 'morning_curator.png',
+            width: double.infinity,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(
+              height: 100,
+              label: 'Failed to load',
+            ),
           ),
         ),
       ],
@@ -123,14 +128,19 @@ class FeatureCardsSection extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        // TODO: Ganti placeholder dengan gambar asli
-        // Path: assets/images/brewing_today.png
+        // Menggunakan Opsi 2 (API Eksternal / Image URL) untuk testing
         ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: _buildImagePlaceholder(
+          child: Image.network(
+            'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=400&q=80',
             width: 80,
             height: 120,
-            label: 'brewing_today.png',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(
+              width: 80,
+              height: 120,
+              label: 'Failed to load',
+            ),
           ),
         ),
       ],

@@ -3,6 +3,8 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/widgets/page_skeletons.dart';
 import '../../../routes/navigation_helper.dart';
+import '../../../core/services/cart_service.dart';
+import '../../../data/models/cart_item_model.dart';
 
 /// ============================================================
 /// CartScreen — Halaman keranjang belanja.
@@ -30,19 +32,13 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   bool _isLoading = true;
 
-  /// Mock cart items — TODO: Ganti dengan data dari cart repository
-  final List<Map<String, dynamic>> _cartItems = [];
-
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 800), () {
+    Future.delayed(const Duration(milliseconds: 400), () {
       if (mounted) setState(() => _isLoading = false);
     });
   }
-
-  int get _totalPrice =>
-      _cartItems.fold(0, (sum, item) => sum + (item['price'] as int) * (item['qty'] as int));
 
   String _formatPrice(int price) {
     final str = price.toString();
@@ -52,20 +48,6 @@ class _CartScreenState extends State<CartScreen> {
       buffer.write(str[i]);
     }
     return 'Rp $buffer';
-  }
-
-  void _incrementQty(int index) {
-    setState(() => _cartItems[index]['qty']++);
-  }
-
-  void _decrementQty(int index) {
-    if (_cartItems[index]['qty'] > 1) {
-      setState(() => _cartItems[index]['qty']--);
-    }
-  }
-
-  void _removeItem(int index) {
-    setState(() => _cartItems.removeAt(index));
   }
 
   @override
@@ -103,13 +85,25 @@ class _CartScreenState extends State<CartScreen> {
       body: ShimmerLoading(
         isLoading: _isLoading,
         skeleton: const _CartSkeleton(),
-        child: _cartItems.isEmpty ? _buildEmptyState() : _buildCartList(),
+        child: ListenableBuilder(
+          listenable: CartService.instance,
+          builder: (context, _) {
+            final cartItems = CartService.instance.items;
+            return cartItems.isEmpty ? _buildEmptyState() : _buildCartList(cartItems);
+          },
+        ),
       ),
 
       // ─── BOTTOM BAR: Total + Checkout ─────────────────────
-      bottomNavigationBar: _isLoading || _cartItems.isEmpty
-          ? null
-          : _buildBottomBar(),
+      bottomNavigationBar: _isLoading 
+          ? null 
+          : ListenableBuilder(
+              listenable: CartService.instance,
+              builder: (context, _) {
+                if (CartService.instance.items.isEmpty) return const SizedBox.shrink();
+                return _buildBottomBar();
+              },
+            ),
     );
   }
 
@@ -150,17 +144,17 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  Widget _buildCartList() {
+  Widget _buildCartList(List<CartItemModel> cartItems) {
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      itemCount: _cartItems.length,
+      itemCount: cartItems.length,
       itemBuilder: (context, index) {
-        final item = _cartItems[index];
+        final item = cartItems[index];
         return Dismissible(
-          key: ValueKey('${item['name']}_$index'),
+          key: ValueKey('${item.menuItem.id}_$index'),
           direction: DismissDirection.endToStart,
-          onDismissed: (_) => _removeItem(index),
+          onDismissed: (_) => CartService.instance.removeItem(index),
           background: Container(
             alignment: Alignment.centerRight,
             margin: const EdgeInsets.only(bottom: 12),
@@ -172,13 +166,13 @@ class _CartScreenState extends State<CartScreen> {
             child: Icon(Icons.delete_outline, color: AppColors.error, size: 24),
           ),
           child: _CartItemCard(
-            name: item['name'],
-            price: _formatPrice(item['price']),
-            qty: item['qty'],
-            iconData: item['image'],
-            onIncrement: () => _incrementQty(index),
-            onDecrement: () => _decrementQty(index),
-            onDelete: () => _removeItem(index),
+            name: item.menuItem.name,
+            price: _formatPrice(item.menuItem.price.toInt()),
+            qty: item.quantity,
+            imageUrl: item.menuItem.imageUrl,
+            onIncrement: () => CartService.instance.incrementQty(index),
+            onDecrement: () => CartService.instance.decrementQty(index),
+            onDelete: () => CartService.instance.removeItem(index),
           ),
         );
       },
@@ -216,7 +210,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _formatPrice(_totalPrice),
+                    _formatPrice(CartService.instance.totalPrice),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -250,7 +244,7 @@ class _CartItemCard extends StatefulWidget {
   final String name;
   final String price;
   final int qty;
-  final IconData iconData;
+  final String? imageUrl;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
   final VoidCallback onDelete;
@@ -259,7 +253,7 @@ class _CartItemCard extends StatefulWidget {
     required this.name,
     required this.price,
     required this.qty,
-    required this.iconData,
+    this.imageUrl,
     required this.onIncrement,
     required this.onDecrement,
     required this.onDelete,
@@ -305,7 +299,11 @@ class _CartItemCardState extends State<_CartItemCard> {
                 width: 64,
                 height: 64,
                 color: AppColors.surface,
-                child: Icon(widget.iconData, color: Colors.grey[500], size: 28),
+                child: widget.imageUrl != null && widget.imageUrl!.isNotEmpty
+                    ? (widget.imageUrl!.startsWith('http')
+                        ? Image.network(widget.imageUrl!, fit: BoxFit.cover)
+                        : Image.asset(widget.imageUrl!, fit: BoxFit.cover))
+                    : Icon(Icons.coffee, color: Colors.grey[500], size: 28),
               ),
             ),
             const SizedBox(width: 12),

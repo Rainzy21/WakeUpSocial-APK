@@ -37,20 +37,13 @@ class HeroSection extends StatelessWidget {
   /// Mengembalikan hanya gambar background (untuk parallax).
   /// TODO: Ganti Container placeholder dengan Image.asset(...)
   static Widget backgroundOnly() {
-    return Container(
-      color: Colors.grey[400],
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.coffee, size: 64, color: Colors.white54),
-            SizedBox(height: 8),
-            Text(
-              'Hero Image\n(assets/images/hero_coffee.png)',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white54, fontSize: 12),
-            ),
-          ],
+    return Image.network(
+      'https://images.unsplash.com/photo-1495474472205-51f33f67950f?auto=format&fit=crop&w=800&q=80',
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => Container(
+        color: Colors.grey[400],
+        child: const Center(
+          child: Icon(Icons.broken_image, color: Colors.white54, size: 64),
         ),
       ),
     );

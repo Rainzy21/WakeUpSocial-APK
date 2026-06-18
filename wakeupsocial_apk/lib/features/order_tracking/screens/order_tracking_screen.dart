@@ -1,24 +1,15 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/widgets/page_skeletons.dart';
 import '../../../routes/navigation_helper.dart';
+import '../../../data/models/order_model.dart';
+import '../../../data/repositories/order_repository.dart';
 
 /// ============================================================
 /// OrderTrackingScreen — Halaman tracking status pesanan.
 /// ============================================================
-///
-/// Sesuai mockup desain:
-/// - AppBar: logo "Wake Up Social" + search
-/// - Order # + estimated arrival time
-/// - Delivery Status card dengan step indicator:
-///   Unpaid → Accepted → In Progress → Ready
-/// - Info summary: Nama, No table, Total
-///
-/// **Navigasi:**
-/// - Back → kembali ke halaman sebelumnya
-///
-/// TODO: Ganti mock data dengan data real-time dari backend.
 class OrderTrackingScreen extends StatefulWidget {
   final String orderId;
 
@@ -29,29 +20,52 @@ class OrderTrackingScreen extends StatefulWidget {
 }
 
 class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
-  bool _isLoading = true;
+  OrderModel? _order;
+  StreamSubscription<OrderModel>? _subscription;
 
-  /// Status saat ini (0-3): Unpaid, Accepted, In Progress, Ready
-  /// TODO: Ambil dari backend via WebSocket/polling
-  final int _currentStep = 1; // "Accepted"
+  int get _currentStep {
+    if (_order == null) return 0;
+    switch (_order!.status) {
+      case OrderStatus.pending: return 0;
+      case OrderStatus.processing: return 1;
+      case OrderStatus.ready: return 2;
+      case OrderStatus.delivered: return 3;
+      case OrderStatus.cancelled: return 0;
+    }
+  }
 
   final List<_TrackingStep> _steps = const [
-    _TrackingStep(icon: Icons.check_circle_outline, label: 'Unpaid'),
-    _TrackingStep(icon: Icons.inventory_2_outlined, label: 'Accepted'),
-    _TrackingStep(icon: Icons.coffee_maker_outlined, label: 'In Progress'),
-    _TrackingStep(icon: Icons.takeout_dining_outlined, label: 'Ready'),
+    _TrackingStep(icon: Icons.check_circle_outline, label: 'Menunggu'),
+    _TrackingStep(icon: Icons.inventory_2_outlined, label: 'Diterima'),
+    _TrackingStep(icon: Icons.coffee_maker_outlined, label: 'Dibuat'),
+    _TrackingStep(icon: Icons.takeout_dining_outlined, label: 'Selesai'),
   ];
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) setState(() => _isLoading = false);
-    });
+    _subscription = OrderRepository().watchOrder(widget.orderId).listen(
+      (order) {
+        if (mounted) {
+          setState(() => _order = order);
+        }
+      },
+      onError: (error) {
+        debugPrint('Error watching order: $error');
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = _order == null;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -89,46 +103,52 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
         ),
       ),
       body: ShimmerLoading(
-        isLoading: _isLoading,
+        isLoading: isLoading,
         skeleton: const _TrackingSkeleton(),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ─── ORDER HEADER ────────────────────────────────
-              Text(
-                'Order #${widget.orderId}',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Estimated arrival in 12-15 minutes',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 24),
+        child: isLoading 
+            ? const SizedBox.shrink()
+            : SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ─── ORDER HEADER ────────────────────────────────
+                    Text(
+                      'Order #${widget.orderId.substring(0, 8).toUpperCase()}',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _order?.status == OrderStatus.cancelled
+                          ? 'Pesanan dibatalkan'
+                          : 'Estimasi pesanan selesai dalam 12-15 menit',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: _order?.status == OrderStatus.cancelled ? Colors.red : AppColors.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
-              // ─── DELIVERY STATUS CARD ────────────────────────
-              _DeliveryStatusCard(
-                steps: _steps,
-                currentStep: _currentStep,
+                    // ─── DELIVERY STATUS CARD ────────────────────────
+                    if (_order?.status != OrderStatus.cancelled)
+                      _DeliveryStatusCard(
+                        steps: _steps,
+                        currentStep: _currentStep,
+                        order: _order!,
+                      ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
       ),
 
-      // ─── BOTTOM: DONE BUTTON ──────────────────────────────
-      bottomNavigationBar: _isLoading
+      // ─── BOTTOM: STRUK BUTTON ──────────────────────────────
+      bottomNavigationBar: isLoading || _order?.status == OrderStatus.cancelled
           ? null
           : _buildDoneButton(),
     );
@@ -152,7 +172,10 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: _DoneButton(
             isEnabled: isReady,
-            onTap: () => NavigationHelper.toOrderHistory(context),
+            onTap: () {
+              // NavigationHelper.toReceipt(context, orderId: widget.orderId);
+              Navigator.pushNamed(context, '/order/receipt', arguments: widget.orderId);
+            },
           ),
         ),
       ),
@@ -177,10 +200,12 @@ class _TrackingStep {
 class _DeliveryStatusCard extends StatefulWidget {
   final List<_TrackingStep> steps;
   final int currentStep;
+  final OrderModel order;
 
   const _DeliveryStatusCard({
     required this.steps,
     required this.currentStep,
+    required this.order,
   });
 
   @override
@@ -221,10 +246,10 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Flexible(
+                const Flexible(
                   child: Text(
-                    'Delivery\nStatus',
-                    style: const TextStyle(
+                    'Order\nStatus',
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
@@ -267,19 +292,15 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
 
   String _getStatusLabel() {
     switch (widget.currentStep) {
-      case 0: return 'UNPAID';
-      case 1: return 'ACCEPTED';
-      case 2: return 'IN PROGRESS';
-      case 3: return 'READY';
+      case 0: return 'PENDING';
+      case 1: return 'PROCESSING';
+      case 2: return 'READY';
+      case 3: return 'DELIVERED';
       default: return 'UNKNOWN';
     }
   }
 
   /// ─── STEP INDICATOR ────────────────────────────────────────
-  /// 4 step icons connected by lines.
-  /// Completed steps: filled circle + colored icon.
-  /// Current step: filled circle + colored icon (highlighted).
-  /// Future steps: outlined circle + grey icon.
   Widget _buildStepIndicator() {
     return Row(
       children: List.generate(widget.steps.length * 2 - 1, (index) {
@@ -364,6 +385,16 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
     );
   }
 
+  String _formatPrice(double price) {
+    final str = price.toInt().toString().split('').reversed.join('');
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && i % 3 == 0) buffer.write('.');
+      buffer.write(str[i]);
+    }
+    return 'Rp ${buffer.toString().split('').reversed.join('')}';
+  }
+
   /// ─── INFO SECTION ──────────────────────────────────────────
   Widget _buildInfoSection() {
     return Container(
@@ -374,19 +405,19 @@ class _DeliveryStatusCardState extends State<_DeliveryStatusCard> {
       ),
       child: Column(
         children: [
-          _infoRow('Nama', 'nabil jaringan'),
+          _infoRow('Nama', widget.order.notes ?? '-'),
           Container(
             height: 1,
             color: AppColors.divider.withValues(alpha: 0.5),
             margin: const EdgeInsets.symmetric(vertical: 8),
           ),
-          _infoRow('No table', '3'),
+          _infoRow('No table', widget.order.tableNumber ?? '-'),
           Container(
             height: 1,
             color: AppColors.divider.withValues(alpha: 0.5),
             margin: const EdgeInsets.symmetric(vertical: 8),
           ),
-          _infoRow('Total', 'Rp 68.000', isBold: true),
+          _infoRow('Total', _formatPrice(widget.order.totalPrice), isBold: true),
         ],
       ),
     );
@@ -487,13 +518,13 @@ class _DoneButtonState extends State<_DoneButton> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                enabled ? Icons.check_circle : Icons.hourglass_top_rounded,
+                enabled ? Icons.receipt_long : Icons.hourglass_top_rounded,
                 color: enabled ? Colors.white : Colors.grey[500],
                 size: 20,
               ),
               const SizedBox(width: 8),
               Text(
-                enabled ? 'Done' : 'Waiting...',
+                enabled ? 'Lihat Struk' : 'Waiting...',
                 style: TextStyle(
                   color: enabled ? Colors.white : Colors.grey[500],
                   fontSize: 16,

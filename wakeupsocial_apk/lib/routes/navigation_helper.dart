@@ -66,6 +66,10 @@ class NavigationHelper {
   static void toOrderTracking(BuildContext context, {required String orderId}) =>
       Navigator.pushNamed(context, AppRoutes.orderTracking, arguments: orderId);
 
+  /// Navigasi ke halaman Receipt / Struk.
+  static void toReceipt(BuildContext context, {required String orderId}) =>
+      Navigator.pushNamed(context, AppRoutes.receipt, arguments: orderId);
+
   // ─── PROFILE ─────────────────────────────────────────────────
 
   /// Navigasi ke halaman Profile Detail (lihat data profil).

@@ -4,23 +4,14 @@ import '../../../routes/navigation_helper.dart';
 import '../widgets/menu_category_chips.dart';
 import '../widgets/menu_promo_carousel.dart';
 import '../widgets/menu_item_card.dart';
-import '../widgets/menu_grouped_section.dart';
+import '../../../core/services/cart_service.dart';
+import '../../../data/models/menu_item_model.dart';
+import '../../../data/models/menu_category_model.dart';
+import '../../../data/repositories/menu_repository.dart';
 
 /// ============================================================
-/// MenuScreen — Halaman daftar menu produk (Tab 1 di Bottom Nav).
+/// MenuScreen — Halaman daftar menu produk terhubung ke Supabase.
 /// ============================================================
-///
-/// Layout:
-/// 1. Search bar
-/// 2. [MenuCategoryChips]      — All Menu, Makanan, Minuman, Snack, Pastry
-/// 3. [MenuPromoCarousel]      — Banner promo (parallax)
-/// 4. Konten menu:
-///    - Jika **Minuman** dipilih → [MenuGroupedSection] per sub-kategori
-///      (Espresso Based, Milk Coffee, Signature, Mocktail, Non Coffee, Tea)
-///    - Jika kategori lain → grid biasa
-///
-/// Approach ini menghindari redundansi sub-chip, user bisa scroll
-/// dan melihat semua jenis minuman sekaligus, terorganisir rapi.
 class MenuScreen extends StatefulWidget {
   const MenuScreen({super.key});
 
@@ -29,6 +20,12 @@ class MenuScreen extends StatefulWidget {
 }
 
 class _MenuScreenState extends State<MenuScreen> {
+  final MenuRepository _menuRepository = MenuRepository();
+  bool _isLoading = true;
+
+  List<MenuCategoryModel> _categories = [];
+  List<MenuItemModel> _menuItems = [];
+
   String _selectedCategory = 'All Menu';
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -36,30 +33,35 @@ class _MenuScreenState extends State<MenuScreen> {
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0;
 
-  final List<String> _mainCategories = [
-    'All Menu',
-    'Makanan',
-    'Minuman',
-    'Snack',
-    'Pastry',
-  ];
-
-  /// Urutan sub-kategori minuman (untuk grouped sections).
-  final List<String> _drinkGroups = [
-    'Espresso Based',
-    'Milk Coffee',
-    'Signature',
-    'Mocktail',
-    'Non Coffee',
-    'Tea',
-  ];
-
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(() {
       setState(() => _scrollOffset = _scrollController.offset);
     });
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    try {
+      final categories = await _menuRepository.getCategories();
+      final items = await _menuRepository.getMenuItems();
+      
+      if (mounted) {
+        setState(() {
+          _categories = categories;
+          _menuItems = items;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memuat menu: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -69,23 +71,22 @@ class _MenuScreenState extends State<MenuScreen> {
     super.dispose();
   }
 
+  List<String> get _mainCategories {
+    return ['All Menu', ..._categories.map((c) => c.name)];
+  }
+
   /// ─── FILTER ────────────────────────────────────────────────
-  List<Map<String, String>> _getFilteredItems({String? subCategory}) {
-    return _allMenuItems.where((item) {
+  List<MenuItemModel> get _filteredItems {
+    return _menuItems.where((item) {
       // Filter kategori utama
       if (_selectedCategory != 'All Menu') {
-        if (item['category'] != _selectedCategory) return false;
-      }
-
-      // Filter sub-kategori (untuk grouped section Minuman)
-      if (subCategory != null) {
-        if (item['subCategory'] != subCategory) return false;
+        if (item.category?.name != _selectedCategory) return false;
       }
 
       // Filter search
       if (_searchQuery.isNotEmpty) {
-        final name = item['name']!.toLowerCase();
-        final desc = item['desc']!.toLowerCase();
+        final name = item.name.toLowerCase();
+        final desc = (item.description ?? '').toLowerCase();
         final query = _searchQuery.toLowerCase();
         if (!name.contains(query) && !desc.contains(query)) return false;
       }
@@ -94,36 +95,61 @@ class _MenuScreenState extends State<MenuScreen> {
     }).toList();
   }
 
+  void _addToCart(MenuItemModel item) {
+    CartService.instance.addItem(item);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${item.name} ditambahkan ke keranjang'),
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  String _formatPrice(double price) {
+    final str = price.toInt().toString().split('').reversed.join('');
+    final buffer = StringBuffer();
+    for (int i = 0; i < str.length; i++) {
+      if (i > 0 && i % 3 == 0) buffer.write('.');
+      buffer.write(str[i]);
+    }
+    return 'Rp ${buffer.toString().split('').reversed.join('')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 12),
-            _buildSearchBar(),
-            const SizedBox(height: 12),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : SingleChildScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  _buildSearchBar(),
+                  const SizedBox(height: 12),
 
-            // ─── KATEGORI UTAMA ──────────────────────────────
-            MenuCategoryChips(
-              categories: _mainCategories,
-              selectedCategory: _selectedCategory,
-              onSelected: (c) => setState(() => _selectedCategory = c),
+                  // ─── KATEGORI UTAMA ──────────────────────────────
+                  if (_categories.isNotEmpty) ...[
+                    MenuCategoryChips(
+                      categories: _mainCategories,
+                      selectedCategory: _selectedCategory,
+                      onSelected: (c) => setState(() => _selectedCategory = c),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // ─── KONTEN MENU ─────────────────────────────────
+                  _buildFlatGrid(),
+
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-
-            // ─── KONTEN MENU ─────────────────────────────────
-            _buildMenuContent(),
-
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
     );
   }
 
@@ -151,13 +177,44 @@ class _MenuScreenState extends State<MenuScreen> {
         ],
       ),
       actions: [
-        IconButton(
-          onPressed: () => NavigationHelper.toCart(context),
-          icon: const Icon(
-            Icons.shopping_cart_outlined,
-            color: AppColors.textPrimary,
-          ),
-          tooltip: 'Keranjang',
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            IconButton(
+              onPressed: () => NavigationHelper.toCart(context),
+              icon: const Icon(
+                Icons.shopping_cart_outlined,
+                color: AppColors.textPrimary,
+              ),
+              tooltip: 'Keranjang',
+            ),
+            ListenableBuilder(
+              listenable: CartService.instance,
+              builder: (context, _) {
+                final count = CartService.instance.totalItemCount;
+                if (count == 0) return const SizedBox.shrink();
+                return Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppColors.error,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      count > 9 ? '9+' : '$count',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ],
     );
@@ -214,49 +271,9 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  /// ─── KONTEN UTAMA ─────────────────────────────────────────
-  /// Jika "Minuman" dipilih → tampilkan grouped sections.
-  /// Jika kategori lain   → tampilkan grid biasa.
-  Widget _buildMenuContent() {
-    if (_selectedCategory == 'Minuman') {
-      return _buildDrinkGroupedSections();
-    } else {
-      return _buildFlatGrid();
-    }
-  }
-
-  /// ─── GROUPED SECTIONS (Minuman) ───────────────────────────
-  /// Setiap sub-kategori minuman ditampilkan sebagai section
-  /// dengan headline + grid produk di bawahnya.
-  Widget _buildDrinkGroupedSections() {
-    final sections = <Widget>[];
-
-    for (final group in _drinkGroups) {
-      final items = _getFilteredItems(subCategory: group);
-      if (items.isEmpty) continue; // Skip jika kosong (misal karena search)
-
-      sections.add(
-        MenuGroupedSection(
-          title: group,
-          items: items,
-          onItemTap: (_) {
-            // TODO: Navigasi ke detail produk
-          },
-          onAddToCart: (_) => NavigationHelper.toCart(context),
-        ),
-      );
-    }
-
-    if (sections.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    return Column(children: sections);
-  }
-
-  /// ─── FLAT GRID (kategori lain) ────────────────────────────
+  /// ─── FLAT GRID ────────────────────────────
   Widget _buildFlatGrid() {
-    final filtered = _getFilteredItems();
+    final filtered = _filteredItems;
 
     if (filtered.isEmpty) {
       return _buildEmptyState();
@@ -290,12 +307,12 @@ class _MenuScreenState extends State<MenuScreen> {
             itemBuilder: (context, index) {
               final item = filtered[index];
               return MenuItemCard(
-                name: item['name']!,
-                description: item['desc']!,
-                price: item['price']!,
-                imageUrl: item['imageUrl'],
+                name: item.name,
+                description: item.description ?? '',
+                price: _formatPrice(item.price),
+                imageUrl: item.imageUrl,
                 onTap: () {},
-                onAddToCart: () => NavigationHelper.toCart(context),
+                onAddToCart: () => _addToCart(item),
               );
             },
           ),
@@ -305,7 +322,6 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   /// ─── SECTION HEADER ───────────────────────────────────────
-  /// Garis merah vertikal + teks judul (sesuai desain).
   static Widget _buildSectionHeader(String title) {
     return Row(
       children: [
@@ -349,308 +365,3 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 }
-
-// ══════════════════════════════════════════════════════════════
-// PARALLAX PROMO CAROUSEL
-// ══════════════════════════════════════════════════════════════
-class _ParallaxPromoCarousel extends StatelessWidget {
-  final double scrollOffset;
-  const _ParallaxPromoCarousel({required this.scrollOffset});
-
-  @override
-  Widget build(BuildContext context) {
-    final parallaxOffset = scrollOffset * 0.3;
-    return ClipRect(
-      child: Transform.translate(
-        offset: Offset(0, parallaxOffset * 0.15),
-        child: const MenuPromoCarousel(),
-      ),
-    );
-  }
-}
-
-// ══════════════════════════════════════════════════════════════
-// DATA MENU — GANTI imageUrl DENGAN URL GAMBAR MENU ANDA
-// ══════════════════════════════════════════════════════════════
-//
-// Cara menambahkan / mengedit menu:
-//   1. Copy template di bawah ini:
-//
-//   {'name': 'Nama Menu', 'desc': 'Deskripsi singkat', 'price': 'Rp XX.000', 'imageUrl': 'https://url-gambar-anda.com/gambar.png', 'category': 'Minuman', 'subCategory': 'Espresso Based'},
-//
-//   2. Ganti masing-masing value:
-//      - name       → Nama produk
-//      - desc       → Deskripsi singkat
-//      - price      → Harga (format: "Rp XX.000")
-//      - imageUrl   → URL gambar menu (kosongkan '' jika belum ada)
-//      - category   → Kategori utama: 'Minuman', 'Makanan', 'Snack', 'Pastry'
-//      - subCategory→ Sub-kategori (khusus Minuman): 'Espresso Based', 'Milk Coffee', 'Signature', 'Mocktail', 'Non Coffee', 'Tea'
-//                     Untuk kategori lain, isi '' (kosong)
-//
-//   3. Tempel di bawah kategori yang sesuai.
-//
-// ══════════════════════════════════════════════════════════════
-final List<Map<String, String>> _allMenuItems = [
-  // ┌──────────────────────────────────────────────────────────┐
-  // │  MINUMAN: Espresso Based                                 │
-  // │  Ganti imageUrl dengan URL gambar menu Anda              │
-  // └──────────────────────────────────────────────────────────┘
-  {
-    'name': 'Espresso',
-    'desc': 'Pure double shot espresso',
-    'price': 'Rp 18.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Espresso Based',
-  },
-  {
-    'name': 'Americano',
-    'desc': 'Espresso with hot water',
-    'price': 'Rp 22.000',
-    'imageUrl': 'assets/images/menu/Americano.jpg',
-    'category': 'Minuman',
-    'subCategory': 'Espresso Based',
-  },
-  {
-    'name': 'Long Black',
-    'desc': 'Double espresso poured over hot water',
-    'price': 'Rp 23.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Espresso Based',
-  },
-
-  // ┌──────────────────────────────────────────────────────────┐
-  // │  MINUMAN: Milk Coffee                                    │
-  // └──────────────────────────────────────────────────────────┘
-  {
-    'name': 'Flat White',
-    'desc': 'Ristretto shots with silky steamed milk',
-    'price': 'Rp 25.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Milk Coffee',
-  },
-  {
-    'name': 'Cappuccino',
-    'desc': 'Espresso, steamed milk, thick foam',
-    'price': 'Rp 24.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Milk Coffee',
-  },
-  {
-    'name': 'Cafe Latte',
-    'desc': 'Smooth espresso with steamed milk',
-    'price': 'Rp 25.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Milk Coffee',
-  },
-  {
-    'name': 'Kopi Susu',
-    'desc': 'Kopi susu segar khas WakeUp',
-    'price': 'Rp 25.000',
-    'imageUrl': 'assets/images/menu/Americano.jpg',
-    'category': 'Minuman',
-    'subCategory': 'Milk Coffee',
-  },
-  // ┌──────────────────────────────────────────────────────────┐
-  // │  MINUMAN: Signature                                      │
-  // └──────────────────────────────────────────────────────────┘
-  {
-    'name': 'Wake Up Special',
-    'desc': 'Our signature house blend',
-    'price': 'Rp 32.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Signature',
-  },
-  {
-    'name': 'Social Fusion',
-    'desc': 'Espresso, caramel, vanilla cream',
-    'price': 'Rp 35.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Signature',
-  },
-
-  // ┌──────────────────────────────────────────────────────────┐
-  // │  MINUMAN: Mocktail                                       │
-  // └──────────────────────────────────────────────────────────┘
-  {
-    'name': 'Berry Fizz',
-    'desc': 'Mixed berry with sparkling soda',
-    'price': 'Rp 28.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Mocktail',
-  },
-  {
-    'name': 'Tropical Sunset',
-    'desc': 'Mango, passion fruit, lychee',
-    'price': 'Rp 30.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Mocktail',
-  },
-
-  // ┌──────────────────────────────────────────────────────────┐
-  // │  MINUMAN: Non Coffee                                     │
-  // └──────────────────────────────────────────────────────────┘
-  {
-    'name': 'Matcha Latte',
-    'desc': 'Japanese green tea latte',
-    'price': 'Rp 26.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Non Coffee',
-  },
-  {
-    'name': 'Chocolate',
-    'desc': 'Rich Belgian chocolate',
-    'price': 'Rp 25.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Non Coffee',
-  },
-  {
-    'name': 'Vanilla Milkshake',
-    'desc': 'Creamy vanilla ice blend',
-    'price': 'Rp 27.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Non Coffee',
-  },
-
-  // ┌──────────────────────────────────────────────────────────┐
-  // │  MINUMAN: Tea                                            │
-  // └──────────────────────────────────────────────────────────┘
-  {
-    'name': 'Earl Grey',
-    'desc': 'Classic bergamot black tea',
-    'price': 'Rp 20.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Tea',
-  },
-  {
-    'name': 'Chamomile',
-    'desc': 'Calming floral herbal tea',
-    'price': 'Rp 22.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Tea',
-  },
-  {
-    'name': 'Lemon Ginger Tea',
-    'desc': 'Fresh lemon with warm ginger',
-    'price': 'Rp 22.000',
-    'imageUrl': '',
-    'category': 'Minuman',
-    'subCategory': 'Tea',
-  },
-
-  // ┌──────────────────────────────────────────────────────────┐
-  // │  MAKANAN (Main Course)                                   │
-  // └──────────────────────────────────────────────────────────┘
-  {
-    'name': 'Nasi Goreng',
-    'desc': 'Indonesian fried rice special',
-    'price': 'Rp 35.000',
-    'imageUrl': '',
-    'category': 'Makanan',
-    'subCategory': '',
-  },
-  {
-    'name': 'Chicken Steak',
-    'desc': 'Grilled chicken with mushroom sauce',
-    'price': 'Rp 45.000',
-    'imageUrl': '',
-    'category': 'Makanan',
-    'subCategory': '',
-  },
-  {
-    'name': 'Aglio Olio',
-    'desc': 'Spaghetti garlic, chili, olive oil',
-    'price': 'Rp 38.000',
-    'imageUrl': '',
-    'category': 'Makanan',
-    'subCategory': '',
-  },
-  {
-    'name': 'Club Sandwich',
-    'desc': 'Triple decker with fries',
-    'price': 'Rp 40.000',
-    'imageUrl': '',
-    'category': 'Makanan',
-    'subCategory': '',
-  },
-
-  // ┌──────────────────────────────────────────────────────────┐
-  // │  SNACK                                                   │
-  // └──────────────────────────────────────────────────────────┘
-  {
-    'name': 'French Fries',
-    'desc': 'Crispy golden fries',
-    'price': 'Rp 20.000',
-    'imageUrl': '',
-    'category': 'Snack',
-    'subCategory': '',
-  },
-  {
-    'name': 'Chicken Wings',
-    'desc': 'Spicy buffalo wings (6 pcs)',
-    'price': 'Rp 30.000',
-    'imageUrl': '',
-    'category': 'Snack',
-    'subCategory': '',
-  },
-  {
-    'name': 'Nachos',
-    'desc': 'Tortilla chips with cheese dip',
-    'price': 'Rp 28.000',
-    'imageUrl': '',
-    'category': 'Snack',
-    'subCategory': '',
-  },
-
-  // ┌──────────────────────────────────────────────────────────┐
-  // │  PASTRY                                                  │
-  // └──────────────────────────────────────────────────────────┘
-  {
-    'name': 'Croissant',
-    'desc': 'Buttery French pastry',
-    'price': 'Rp 22.000',
-    'imageUrl': '',
-    'category': 'Pastry',
-    'subCategory': '',
-  },
-  {
-    'name': 'Cinnamon Roll',
-    'desc': 'Warm cinnamon with cream cheese',
-    'price': 'Rp 25.000',
-    'imageUrl': '',
-    'category': 'Pastry',
-    'subCategory': '',
-  },
-  {
-    'name': 'Banana Bread',
-    'desc': 'Moist banana cake slice',
-    'price': 'Rp 20.000',
-    'imageUrl': '',
-    'category': 'Pastry',
-    'subCategory': '',
-  },
-
-  // ┌──────────────────────────────────────────────────────────┐
-  // │  TAMBAH MENU BARU DI SINI — Copy template berikut:      │
-  // │                                                          │
-  // │  {'name': 'Nama Menu',                                   │
-  // │   'desc': 'Deskripsi singkat',                           │
-  // │   'price': 'Rp XX.000',                                  │
-  // │   'imageUrl': 'https://url-gambar.com/gambar.png',       │
-  // │   'category': 'Minuman',                                 │
-  // │   'subCategory': 'Espresso Based'},                      │
-  // └──────────────────────────────────────────────────────────┘
-];

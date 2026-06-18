@@ -48,6 +48,7 @@ class OrderRepository {
               'name': cartItem.menuItem.name,
               'price': cartItem.menuItem.price,
               'quantity': cartItem.quantity,
+              'subtotal': cartItem.menuItem.price * cartItem.quantity,
             })
         .toList();
 
