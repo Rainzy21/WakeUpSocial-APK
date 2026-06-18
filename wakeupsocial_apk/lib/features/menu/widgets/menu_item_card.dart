@@ -90,7 +90,7 @@ class _MenuItemCardState extends State<MenuItemCard> {
             ],
           ),
           transform: _isPressed
-              ? (Matrix4.identity()..scale(0.97))
+              ? (Matrix4.identity()..scaleByDouble(0.97, 0.97, 0.97, 1.0))
               : Matrix4.identity(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -2,11 +2,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/constants/order_status.dart';
 import '../../core/network/resilient_call.dart';
-import '../../core/services/local_storage_service.dart';
 
 class OrderRepository {
   final SupabaseClient _supabase = Supabase.instance.client;
-  final LocalStorageService _storage = LocalStorageService();
   final _uuid = const Uuid();
 
   Future<Map<String, dynamic>> createOrder({

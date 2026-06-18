@@ -23,11 +23,12 @@ class _WalletScreenState extends State<WalletScreen> {
   Future<void> _load() async {
     try {
       final wallet = await _walletRepo.getWallet();
-      if (mounted)
+      if (mounted) {
         setState(() {
           _wallet = wallet;
           _loading = false;
         });
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
